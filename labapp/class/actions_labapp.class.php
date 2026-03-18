@@ -1,59 +1,6 @@
 ﻿<?php
-/* ╔══════════════════════════════════════════════════════════════════════════════════╗
- * ║                                                                                ║
- * ║   CLASSE: ActionsLabapp                                                        ║
- * ║   ARQUIVO: custom/labapp/class/actions_labapp.class.php                        ║
- * ║   MÓDULO: Lab Connecta (modLabApp)                                             ║
- * ║                                                                                ║
- * ║   PROPÓSITO:                                                                   ║
- * ║   1. Injetar campos fiscais brasileiros (NFSe/NFe) na página de configuração   ║
- * ║      da empresa (admin/company.php) via sistema de hooks.                      ║
- * ║   2. Injetar seção de configuração de ambiente (Produção/Homologação),         ║
- * ║      certificado digital A1 (.pfx/.p12) e senha do certificado.               ║
- * ║   Tudo SEM editar o código-fonte core do Dolibarr.                             ║
- * ║                                                                                ║
- * ║   SEGURANÇA:                                                                   ║
- * ║   - Inputs sanitizados via GETPOST() nativo + validação de tipos               ║
- * ║   - Constantes salvas via dolibarr_set_const() (usa $db->escape)              ║
- * ║   - Valores no JS usam addslashes() contra XSS                                ║
- * ║   - Senha do certificado criptografada com AES-256-GCM (via nfe_security)     ║
- * ║   - Certificado processado com conversão automática para OpenSSL 3.x          ║
- * ║   - Config sensível em llx_nfe_config (tabela separada)                       ║
- * ║   - CSRF token validado manualmente para o form de certificado                ║
- * ║   - A página admin/company.php já exige permissão de administrador             ║
- * ║                                                                                ║
- * ╚══════════════════════════════════════════════════════════════════════════════════╝ */
-
 class ActionsLabapp
 {
-    // ┌────────────────────────────────────────────────────────────────────────────────────┐
-    // │ CONFIGURAÇÃO: CAMPOS A OCULTAR NA FICHA DE TERCEIROS (societe/card.php)             │
-    // │                                                                                    │
-    // │ Para ocultar um campo, basta adicionar o seletor CSS neste array.                  │
-    // │ O script irá esconder a linha <tr> inteira que contém o elemento.                   │
-    // │                                                                                    │
-    // │ COMO ENCONTRAR O SELETOR:                                                          │
-    // │   1. Abra societe/card.php no navegador                                            │
-    // │   2. Clique com botão direito no campo → "Inspecionar"                             │
-    // │   3. Procure o atributo id="" do <input>, <select> ou <textarea>                   │
-    // │   4. Use '#id_do_campo' como seletor (ex: '#address', '#fax', '#url')              │
-    // │                                                                                    │
-    // │ SELETORES DISPONÍVEIS EM societe/card.php:                                         │
-    // │   '#address'          → Campo Endereço (textarea)                                  │
-    // │   '#zipcode'          → Campo CEP                                                  │
-    // │   '#town'             → Campo Cidade                                               │
-    // │   '#phone'            → Campo Telefone                                             │
-    // │   '#phone_mobile'     → Campo Celular                                              │
-    // │   '#fax'              → Campo Fax                                                  │
-    // │   '#email'            → Campo E-mail                                               │
-    // │   '#url'              → Campo Website/URL                                          │
-    // │   '#barcode'          → Campo Código de Barras                                     │
-    // │   '#status'           → Campo Status ativo/inativo                                 │
-    // │                                                                                    │
-    // │ NOTA: 'viewLabel' é o texto da label no modo visualização (sem formulário).        │
-    // │ Deixe vazio ('') se quiser ocultar apenas no modo edição/criação.                  │
-    // └────────────────────────────────────────────────────────────────────────────────────┘
-
     /**
      * Lista de campos a ocultar na página de terceiros (societe/card.php).
      *
@@ -66,13 +13,13 @@ class ActionsLabapp
      */
     private static $fieldsToHide = array(
 
-        array('selector' => '#address',  'viewLabel' => 'Address'),
+        //array('selector' => '#address',  'viewLabel' => 'Address'),
 
         // ── Exemplos prontos para ativar (descomente a linha): ──
 
-        // array('selector' => '#fax', 'viewLabel' => 'Fax'),
-        // array('selector' => '#url', 'viewLabel' => 'Web'),
-        // array('selector' => '#iva', 'viewLabel' => 'ID do IVA'),
+        array('selector' => '#fax', 'viewLabel' => 'Fax'),
+        array('selector' => '#url', 'viewLabel' => 'Web'),
+        array('selector' => '#iva', 'viewLabel' => 'ID do IVA'),
         // array('selector' => '#barcode',       'viewLabel' => 'Gencod'),
         // array('selector' => '#phone',         'viewLabel' => 'Phone'),
         // array('selector' => '#phone_mobile',  'viewLabel' => 'PhoneMobile'),
@@ -81,45 +28,6 @@ class ActionsLabapp
         // array('selector' => '#town',          'viewLabel' => 'Town'),
     );
 
-    // ┌────────────────────────────────────────────────────────────────────────────────────┐
-    // │ CONFIGURAÇÃO: CAMPOS A OCULTAR NO CADASTRO DA EMPRESA (admin/company.php)          │
-    // │                                                                                    │
-    // │ Para ocultar um campo, basta DESCOMENTAR a linha correspondente abaixo.            │
-    // │ Para reexibir, comente a linha novamente.                                          │
-    // │                                                                                    │
-    // │ SELETORES DISPONÍVEIS EM admin/company.php:                                        │
-    // │                                                                                    │
-    // │ ── BLOCO ENDEREÇO ────────────────────────────────────────────────────────────     │
-    // │   '#MAIN_INFO_SOCIETE_ADDRESS' → Endereço (textarea nativo)                        │
-    // │   '#MAIN_INFO_SOCIETE_ZIP'    → CEP                                                │
-    // │   '#MAIN_INFO_SOCIETE_TOWN'   → Cidade                                             │
-    // │   '#state_id'                 → Estado (select)                                    │
-    // │   '#MAIN_INFO_RUA'            → Rua  (campo personalizado do módulo)               │
-    // │   '#MAIN_INFO_BAIRRO'         → Bairro (campo personalizado do módulo)             │
-    // │   '#MAIN_INFO_NUMERO'         → Número (campo personalizado do módulo)             │
-    // │                                                                                    │
-    // │ ── BLOCO IDENTIFICAÇÃO ───────────────────────────────────────────────────────     │
-    // │   '#name'                     → Razão Social (campo obrigatório — cuidado!)        │
-    // │   '#MAIN_INFO_NOME_FANTASIA'  → Nome Fantasia (campo personalizado do módulo)      │
-    // │   '#currency'                 → Moeda padrão (select)                              │
-    // │   '#selectcountry_id'         → País (select)                                      │
-    // │                                                                                    │
-    // │ ── BLOCO CONTATO ─────────────────────────────────────────────────────────────     │
-    // │   '#phone'                    → Telefone                                           │
-    // │   '#phone_mobile'             → Celular                                            │
-    // │   '#fax'                      → Fax                                                │
-    // │   '#email'                    → E-mail                                             │
-    // │   '#web'                      → Website                                            │
-    // │                                                                                    │
-    // │ ── BLOCO FISCAL ──────────────────────────────────────────────────────────────     │
-    // │   '#MAIN_INFO_CRT'            → CRT (select — campo personalizado do módulo)       │
-    // │   '#MAIN_INFO_REGIMETRIBUTACAO' → Regime Tributação (select — módulo)              │
-    // │   '#MAIN_INFO_INCENTIVOFISCAL'  → Incentivo Fiscal (select — módulo)               │
-    // │                                                                                    │
-    // │ ── OUTROS ────────────────────────────────────────────────────────────────────     │
-    // │   '#note'                     → Observações (textarea)                             │
-    // │   '#barcode'                  → Código de Barras (só aparece se módulo ativo)      │
-    // └────────────────────────────────────────────────────────────────────────────────────┘
     private static $fieldsToHideAdmin = array(
 
         // ── ENDEREÇO ─────────────────────────────────────────────────────────────────────
@@ -143,26 +51,6 @@ class ActionsLabapp
         // array('selector' => '#barcode',                'viewLabel' => ''),  // Cód. Barras
         // array('selector' => '#MAIN_INFO_NOME_FANTASIA','viewLabel' => ''),  // Nome Fantasia
     );
-
-    // ┌─────────────────────────────────────────────────────────────────────────┐
-    // │ CONFIGURAÇÃO: ORDEM DOS EXTRAFIELDS NA FICHA DE PRODUTO                 │
-    // │                                                                          │
-    // │ Define onde cada extrafield de produto/serviço aparece no formulário:   │
-    // │                                                                          │
-    // │   'after'  → logo ABAIXO do campo Descrição  (padrão para não listados) │
-    // │   'before' → logo ACIMA  do campo Descrição                             │
-    // │                                                                          │
-    // │ COMO DESCOBRIR O NOME DO CAMPO:                                          │
-    // │   1. Vá em Configuração > Extrafields > Produtos                         │
-    // │   2. Copie o valor da coluna "Código" do campo desejado                 │
-    // │   3. Adicione aqui: 'codigo_do_campo' => 'after'  (ou 'before')         │
-    // │                                                                          │
-    // │ Campos NÃO listados aqui aparecem ABAIXO da Descrição por padrão.       │
-    // │                                                                          │
-    // │ EXEMPLOS:                                                                │
-    // │   'prd_ncm'  => 'after'   → NCM aparece ABAIXO da Descrição ✓           │
-    // │   'prd_ncm'  => 'before'  → NCM aparece ACIMA  da Descrição             │
-    // └─────────────────────────────────────────────────────────────────────────┘
 
     /**
      * Ordem dos extrafields na ficha de produto/serviço.
@@ -188,17 +76,6 @@ class ActionsLabapp
         // 'prd_ncm' => 'before',
 
     );
-
-
-
-
-
-
-
-
-
-
-
 
     /** @var DoliDB Instância do banco de dados do Dolibarr */
     protected $db;
@@ -417,7 +294,6 @@ JSHIDE;
             }
         }
 
-        
 
         if ($action === 'savesetup' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             // ── Validação CSRF ──
