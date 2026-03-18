@@ -154,7 +154,7 @@ class modNFSe extends DolibarrModules
         // Terceiros
         $extrafields->addExtraField('bairro', 'Bairro', 'varchar', 100, 255, 'societe', 0, 0);
         $extrafields->addExtraField('numero_de_endereco', 'Número de Endereço', 'varchar', 100, 8, 'societe', 0, 0, '', '', 1, '', 1);
-        $extrafields->addExtraField('rua', 'Rua', 'varchar', 100, 255, 'societe', 0, 0);
+        //$extrafields->addExtraField('rua', 'Rua', 'varchar', 100, 255, 'societe', 0, 0);
 
         $servicosOptions = array();
         $sqlSrv = "SELECT codigo, descricao FROM ".MAIN_DB_PREFIX."nfse_codigo_servico ORDER BY CAST(codigo AS UNSIGNED) ASC";
