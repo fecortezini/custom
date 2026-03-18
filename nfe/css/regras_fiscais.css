@@ -1,0 +1,1196 @@
+/* ========================================
+   REGRAS FISCAIS - FORMULÁRIO
+   ======================================== */
+
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-600: #4b5563;
+    --gray-900: #111827;
+}
+
+/* Container Principal do Formulário */
+.rf-wrapper {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.06);
+    border: 1px solid var(--gray-200);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Header do formulário */
+.rf-header {
+    background: var(--gray-50);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.rf-header h2 { margin: 0; font-size: 16px; color: var(--gray-900); font-weight: 600; }
+.rf-status-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: var(--gray-200);
+    color: var(--gray-600);
+}
+
+/* Grid Principal (12 colunas) */
+.rf-main-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Painéis */
+.rf-panel {
+    background-color: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 15px;
+}
+.rf-panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+/* Grid de campos dentro dos painéis */
+.rf-fields-grid {
+    display: grid;
+    gap: 12px;
+}
+.rf-fields-grid.cols-1 { grid-template-columns: 1fr; }
+.rf-fields-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.rf-fields-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.rf-fields-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Campo individual */
+.rf-field {
+    display: flex;
+    flex-direction: column;
+}
+.rf-field label {
+    font-size: 11px;
+    color: var(--gray-600);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+.rf-field input, .rf-field select {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 13px;
+    border: 1px solid var(--gray-300);
+    border-radius: 4px;
+    height: 32px;
+    box-sizing: border-box;
+    background-color: white;
+}
+.rf-field input:focus, .rf-field select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+/* Modificadores de Grid */
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+.span-4 { grid-column: span 4; }
+.span-6 { grid-column: span 6; }
+.span-12 { grid-column: span 12; }
+
+/* Barra de Ações */
+.rf-actions {
+    padding: 15px 20px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    text-align: right;
+}
+.rf-btn {
+    padding: 8px 18px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 10px;
+}
+.rf-btn-primary { background: var(--primary); color: white; }
+.rf-btn-primary:hover { background: var(--primary-dark); }
+.rf-btn-secondary { background: white; border-color: var(--gray-300); color: var(--gray-600); }
+.rf-btn-secondary:hover { background: var(--gray-100); border-color: var(--gray-400); }
+
+.rf-actions-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+.rf-btn-table {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #222;
+    background: #f2f2f2;
+    border: 1px solid #c9c9c9;
+    border-radius: 3px;
+    line-height: 1.2;
+}
+.rf-btn-table:hover {
+    background: #e2e2e2;
+}
+.rf-btn-danger {
+    background: #f8e1e1;
+    border-color: #d8b4b4;
+    color: #8a1c1c;
+}
+.rf-btn-danger:hover {
+    background: #f2c9c9;
+}
+
+/* Remove sublinhado e padroniza anchors .butAction dentro da área de ações */
+.rf-actions .butAction {
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 8px 14px !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    border: 1px solid transparent !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    box-sizing: border-box !important;
+    transition: all 0.12s ease !important;
+    cursor: pointer !important;
+}
+
+/* Variantes (aproveita classes rf-btn existentes) */
+.rf-actions .butAction.rf-btn-primary {
+    background: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+}
+.rf-actions .butAction.rf-btn-secondary {
+    background: #fff !important;
+    color: var(--gray-600) !important;
+    border-color: var(--gray-300) !important;
+}
+
+.rf-actions .butAction:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(15,23,42,0.06);
+}
+
+/* Mobile: mantém área de toque confortável */
+@media (max-width: 480px) {
+    .rf-actions .butAction {
+        padding: 10px 12px !important;
+        font-size: 14px !important;
+        height: auto !important;
+    }
+}
+
+/* ========================================
+   LEGENDA DE STATUS
+   ======================================== */
+.rf-status-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Restaurado: alinhamento à esquerda para evitar extrapolação */
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 15px;
+    /* width: 100%;  REMOVIDO para evitar overflow horizontal */
+}
+
+/* Garante que o botão dentro da legenda fique alinhado à direita sem forçar a largura do container */
+.rf-status-legend > .butAction,
+.rf-status-legend > .rf-btn-add-legend {
+    margin-left: auto;
+}
+
+.rf-status-legend-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 0.95em;
+}
+
+.rf-status-legend-left strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+.rf-status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rf-status-circle {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0,0,0,.2);
+}
+
+.rf-status-circle.rf-status-active {
+    background: #28a745;
+    border: 2px solid #218838;
+}
+
+.rf-status-circle.rf-status-inactive {
+    background: #6c757d;
+    border: 2px solid #5a6268;
+}
+
+/* ========================================
+   DESTAQUE DE LINHAS POR STATUS
+   ======================================== */
+/* Removido background color para que a tabela de listagem não mostre cor de fundo nas linhas */
+.liste tr.rf-row-active td {
+    background-color: transparent !important;
+}
+
+.liste tr.rf-row-inactive td {
+    background-color: transparent !important;
+}
+
+/* Remove também o destaque ao passar o mouse */
+.liste tr:hover td {
+    background-color: transparent !important;
+}
+
+/* Garante que células não herdem cor de fundo */
+.liste td {
+    background-color: transparent !important;
+}
+
+/* ========================================
+   FILTRO DE STATUS (CHECKBOX DROPDOWN)
+   ======================================== */
+.rf-filter-status-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.rf-status-btn {
+    width: 100%;
+    /* Alinhamento e dimensões ajustados para coincidir com .rf-search-btn-new */
+    height: 35px;               /* igual ao botão de busca */
+    padding: 0 12px;            /* remover padding vertical para centralizar conteúdo */
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    display: inline-flex;       /* inline-flex para respeitar fluxo e alinhar corretamente */
+    align-items: center;        /* garante que conteúdo fique centralizado verticalmente */
+    justify-content: space-between;
+    font-size: 0.9em;
+    color: #4b5563;
+    box-sizing: border-box;
+    line-height: 1;             /* evita saltos de linha inesperados */
+    vertical-align: middle;     /* ajuda no alinhamento com elementos inline ao lado */
+    gap: 8px;
+}
+.rf-status-btn:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+}
+.rf-status-btn .arrow {
+    font-size: 0.82em;
+    margin-left: 8px;
+    color: #6b7280;
+}
+
+.rf-status-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    min-width: 100%;
+    width: max-content;
+    padding: 6px 0;
+    margin-top: 4px;
+}
+.rf-status-dropdown.show {
+    display: block;
+}
+.rf-status-dropdown label {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #374151;
+    transition: background-color 0.15s;
+}
+.rf-status-dropdown label:hover {
+    background: #f3f4f6;
+}
+.rf-status-dropdown input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+/* ========================================
+   BOTÃO DE BUSCA (REDESIGN COMPLETO) - atualizado para visual mais suave
+   ======================================== */
+.rf-search-btn-new {
+    background-color: #ffffff; /* branco, leve como padrão Dolibarr */
+    color: #1e4266; /* tom azul escuro para texto */
+    border: 1px solid #cfd8e3;
+    border-radius: 6px;
+    padding: 0 18px;
+    height: 40px; /* Aumentado de 34px para 40px */
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: none;
+    width: auto; /* não ocupa toda a largura */
+    white-space: nowrap;
+}
+.rf-search-btn-new:hover {
+    background-color: #f4f7fb;
+    border-color: #a9c1e0;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(30,66,105,0.06);
+}
+.rf-search-btn-new svg {
+    fill: currentColor;
+    width: 14px;
+    height: 14px;
+}
+
+/* ========================================
+   PAGINAÇÃO
+   ======================================== */
+.rf-pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 10px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.rf-pagination-info {
+    font-size: 0.95em;
+    color: #495057;
+    font-weight: 500;
+}
+
+.rf-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.rf-page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rf-page-size-selector label {
+    font-size: 0.9em;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.rf-page-size-selector select {
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: white;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.rf-page-nav {
+    display: flex;
+    gap: 5px;
+}
+
+.rf-page-btn {
+    padding: 6px 12px;
+    border: 1px solid #ced4da;
+    background: white;
+    color: #495057;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.rf-page-btn:hover:not(.disabled) {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.rf-page-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+    font-weight: bold;
+}
+
+.rf-page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ========================================
+   BARRA DE FILTROS
+   ======================================== */
+.rf-filter-bar {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.rf-filter-form {
+    width: 100%;
+}
+
+.rf-filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+
+.rf-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative; /* IMPORTANTE: necessário para position absolute do popover */
+}
+
+.rf-filter-label {
+    font-size: 0.85em;
+    color: var(--gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.rf-filter-input,
+.rf-filter-select {
+    width: 100%;
+    max-width: 100%; /* Impede extrapolação */
+    padding: 8px 12px;
+    font-size: 0.9em;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box; /* CRÍTICO: inclui padding na largura */
+}
+
+.rf-filter-input:focus,
+.rf-filter-select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.rf-filter-btn {
+    width: 100%;
+    max-width: 100%; /* Impede extrapolação */
+    padding: 8px 12px;
+    border: 1px solid #cfe6e2;
+    background: #fff;
+    color: #2c7a7b;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    box-sizing: border-box; /* CRÍTICO */
+}
+
+.rf-filter-btn:hover {
+    background: #f0fbf8;
+    border-color: #1abc9c;
+}
+
+.rf-badge {
+    display: inline-block;
+    min-width: 18px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: #1abc9c;
+    color: #fff;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+/* ========================================
+   AJUSTES DO BOTÃO ADICIONAR
+   ======================================== */
+.tabsAction {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+.tabsAction .butAction {
+    margin: 0 !important;
+}
+
+/* MAIOR LARGURA PARA O INPUT DE DESCRIÇÃO (quando precisar ocupar linha própria) */
+
+.rf-filter-group.full-width .rf-filter-input {
+	max-width: 100%;
+	min-width: 280px; /* mantém mínimo razoável sem empurrar botões para longe */
+	width: 100%;
+}
+@media (max-width: 768px) {
+	/* em telas pequenas retorna ao 100% para evitar overflow */
+	.rf-filter-group.full-width .rf-filter-input {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+	}
+}
+
+/* Repaginação: grid mais consistente para a barra de filtros
+   Status fixo, UF Origem / UF Destino / CFOP / NCM flexíveis (ocupam resto da largura),
+   última coluna para ações permanece fixa */
+.rf-filter-bar .rf-filter-row {
+    display: grid;
+    /* status / uf origem / uf destino / cfop / ncm / ações */
+    grid-template-columns: 180px minmax(90px, 1fr) minmax(90px, 1fr) minmax(110px, 1fr) minmax(120px, 1fr) 120px;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Em screens menores volta para coluna única */
+@media (max-width: 900px) {
+    .rf-filter-bar .rf-filter-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Força descrição a ocupar linha inteira (mantém .full-width) */
+.rf-filter-group.full-width {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+}
+
+/* Ajusta input da descrição para ficar mais largo visualmente dentro do grupo full-width */
+.rf-filter-group.full-width .rf-filter-input {
+    max-width: 100%;
+    min-width: 280px; /* mantém mínimo razoável sem empurrar botões para longe */
+    width: 100%;
+}
+
+/* Botões de ação (buscar + limpar) alinhados e compactos */
+.rf-filter-actions {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end; /* força os botões à direita */
+    height: 40px;
+}
+.rf-clear-btn {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    color: #4b5563;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.rf-clear-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e1;
+}
+
+/* Alinha o grupo de ações (buscar/limpar) no final da linha do grid */
+.rf-filter-actions-group {
+    justify-self: end;   /* empurra o grupo para a coluna de ações (direita) */
+    align-self: center;  /* centraliza verticalmente no grid */
+}
+
+/* Pequeno ajuste para consistência de altura em inputs/botões */
+.rf-filter-group > .rf-status-btn,
+.rf-filter-group > .rf-filter-input,
+.rf-filter-group > .rf-filter-select,
+.rf-filter-group.rf-filter-actions-group > .rf-filter-actions,
+.rf-search-btn-new,
+.rf-clear-btn {
+    height: 40px;
+    box-sizing: border-box;
+}
+
+/* Garante que todos os inputs da barra de filtros tenham mesma altura */
+.rf-filter-bar .rf-filter-input,
+.rf-filter-bar .rf-filter-select,
+.rf-filter-bar .rf-status-btn,
+.rf-filter-bar .rf-search-btn-new,
+.rf-filter-bar .rf-clear-btn {
+    height: 40px;
+    padding-top: 0;
+    padding-bottom: 0;
+    box-sizing: border-box;
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+    .rf-main-grid { grid-template-columns: repeat(1, 1fr); }
+    .rf-panel { grid-column: span 1 !important; }
+}
+@media (max-width: 768px) {
+    .rf-fields-grid.cols-4 { grid-template-columns: 1fr 1fr; }
+    .rf-fields-grid.cols-3 { grid-template-columns: 1fr; }
+    .rf-pagination-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .rf-pagination-info {
+        text-align: center;
+    }
+    
+    .rf-pagination-controls {
+        flex-direction: column;
+    }
+    
+    .rf-page-nav {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .rf-filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .rf-status-legend {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Inline container para Descrição + Ações (botões ao lado do input) */
+.rf-filter-inline {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+.rf-filter-inline .rf-filter-input {
+	flex: 1;
+	margin-bottom: 0; /* remove espaço extra por causa do label */
+}
+.rf-filter-inline .rf-filter-actions {
+	display: inline-flex;
+	gap: 8px;
+	align-items: center;
+	margin: 0;
+}
+
+/* Reduz o espaçamento entre input e botões (mais compacto) */
+.rf-filter-actions .rf-search-btn-new,
+.rf-filter-actions .rf-clear-btn {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Garante que label da descrição fique acima e o inline ocupe a linha */
+.rf-filter-group.full-width { grid-column: 1 / -1; margin-top: 6px; }
+
+/* ===== NOVO LAYOUT DA VISUALIZAÇÃO ===== */
+.rf-view-hero {
+	background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); /* gradiente suave cinza-azulado */
+	color: #1e293b; /* texto escuro para contraste */
+	border-radius: 12px;
+	padding: 28px 32px;
+	margin-bottom: 24px;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+	border: 1px solid #cbd5e1;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+.rf-view-hero-title h1 {
+	margin: 0 0 10px 0;
+	font-size: 1.9rem;
+	font-weight: 700;
+	color: #0f172a; /* quase preto para destaque */
+}
+.rf-view-hero-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	font-size: 0.95rem;
+	color: #475569; /* cinza médio */
+}
+.rf-view-hero-badges {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+}
+.rf-badge-chip {
+	padding: 6px 14px;
+	border-radius: 999px;
+	background: #ffffff; /* branco sólido para contraste */
+	border: 1px solid #cbd5e1;
+	color: #334155;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	font-size: 0.82rem;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* CFOP no hero: agora com fundo branco e borda */
+.rf-cfop-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    min-width: 110px;
+    margin-left: 12px;
+    background: #ffffff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.rf-cfop-hero-number {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a; /* texto escuro */
+    line-height: 1;
+}
+.rf-cfop-hero-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* Métricas principais */
+.rf-view-metrics {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+.rf-metric-card {
+	background: #fff;
+	border-radius: 14px;
+	padding: 18px;
+	border: 1px solid #f1f5f9;
+	box-shadow: 0 10px 25px -15px rgba(15,23,42,0.3);
+}
+.rf-metric-label {
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	color: #94a3b8;
+	letter-spacing: 0.08em;
+	margin-bottom: 6px;
+}
+.rf-metric-value {
+	font-size: 1.4rem;
+	font-weight: 700;
+	color: #0f172a;
+}
+.rf-metric-sub {
+	font-size: 0.85rem;
+	color: #64748b;
+	margin-top: 4px;
+}
+
+/* Seções detalhadas */
+.rf-view-sections {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: 20px;
+	margin-bottom: 24px;
+}
+.rf-section-card {
+	background: #fff;
+	border-radius: 16px;
+	border: 1px solid #e2e8f0;
+	padding: 22px;
+	box-shadow: 0 15px 30px -20px rgba(15,23,42,0.35);
+}
+.rf-section-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+.rf-section-title {
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: #0f172a;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.rf-section-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px 16px;
+}
+
+/* Reaproveita estilos base */
+.rf-data-label {
+	font-size: 0.75rem;
+	color: #94a3b8;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin-bottom: 4px;
+}
+.rf-data-value {
+	font-size: 1rem;
+	font-weight: 600;
+	color: #0f172a;
+}
+
+/* ESTILOS DA PÁGINA DE VISUALIZAÇÃO */
+.rf-view-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 100%; /* Alterado de 1200px para 100% */
+    margin: 0 auto;
+    padding: 0 20px; /* Adicionado para evitar colagem nas bordas */
+    box-sizing: border-box;
+}
+
+/* Cabeçalho do Card */
+.rf-view-header-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.rf-view-title-group h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    color: #111827;
+    font-weight: 700;
+}
+
+.rf-view-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.rf-view-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Grid de Conteúdo */
+.rf-view-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Alterado para 1 coluna (largura total) */
+    gap: 20px;
+}
+
+/* Grid interno para os impostos (para aproveitar a largura total do card) */
+.rf-view-tax-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+
+    /* ADICIONADO: garante que os itens do grid se estiquem em altura */
+    align-items: stretch;
+}
+
+/* @media (max-width: 900px) {
+    .rf-view-grid { grid-template-columns: 1fr; }
+} */
+
+.rf-view-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    overflow: hidden;
+    height: 100%;
+}
+
+.rf-view-card-header {
+    background: #f9fafb;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rf-view-card-body {
+    padding: 20px;
+}
+
+/* Itens de Dados */
+.rf-data-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.rf-data-row:last-child { margin-bottom: 0; }
+
+.rf-data-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.rf-data-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.rf-data-value {
+    font-size: 1rem;
+    color: #111827;
+    font-weight: 500;
+    word-break: break-word;
+}
+
+.rf-data-value.highlight {
+    color: #2563eb;
+    font-weight: 600;
+    background: transparent; /* remove cor de fundo do UF */
+    padding: 0;              /* garante que não fique com spacing extra */
+    border-radius: 0;
+}
+
+/* Grupos de Impostos */
+.rf-tax-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+
+    /* ADICIONADO: torna cada card um flex container em coluna e ocupa 100% da altura do grid cell */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* Mantém o título no topo e o conteúdo estica abaixo */
+.rf-tax-section .rf-tax-title {
+    margin-bottom: 12px;
+}
+
+/* Faz a área de dados ocupar o espaço restante, alinhando visualmente os cards */
+.rf-tax-section > .rf-data-row {
+    /* permite que o bloco de dados cresça e preencha o espaço disponível */
+    flex: 1 1 auto;
+    display: grid;
+    align-content: start; /* garante que os itens fiquem no topo do espaço se não preencherem tudo */
+}
+
+/* Badges Específicos */
+.rf-badge-lg {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+.rf-badge-active { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.rf-badge-inactive { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+
+/* Botões de Ação no Header */
+.rf-header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Substitui o destaque anterior do CFOP por um badge sutil e consistente com o hero */
+.rf-cfop-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: 0.02em;
+    border: 1px solid #cbd5e1;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.rf-cfop-badge:focus,
+.rf-cfop-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.rf-cfop-badge .rf-cfop-code {
+    font-size: 1.06rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* Badge destacado para CFOP no hero */
+.rf-cfop-highlighted-badge {
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    font-size: 1.1rem;
+    color: #0f172a; /* texto escuro */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.rf-cfop-highlighted-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* Badge do CFOP (versão antiga, se ainda usado) */
+.rf-cfop-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: 0.02em;
+    border: 1px solid #cbd5e1;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.rf-cfop-badge:focus,
+.rf-cfop-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.rf-cfop-badge .rf-cfop-code {
+    font-size: 1.06rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+/* ========================================
+   AJUSTE FINO: BOTÕES .butAction (redução moderada)
+   ======================================== */
+.butAction,
+.rf-actions-row .butAction,
+.rf-status-legend > .butAction,
+.tabsAction .butAction {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 4px 10px !important;    /* reduzido levemente */
+    font-size: 12px !important;      /* tamanho de fonte um pouco menor */
+    height: 34px !important;         /* altura reduzida, ainda confortável */
+    line-height: 1.2 !important;
+    border-radius: 6px !important;
+    min-width: auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Mantém espaçamento à direita para botões em linha */
+.rf-actions-row .butAction { margin-right: 6px; }
+
+/* Em telas muito pequenas manter empilhamento e toque confortável */
+@media (max-width: 480px) {
+    .butAction,
+    .rf-actions-row .butAction {
+        padding: 6px 10px !important; /* aumenta padding vertical levemente em mobile */
+        font-size: 13px !important;
+        height: auto !important;
+    }
+}

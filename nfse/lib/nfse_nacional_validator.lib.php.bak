@@ -1,0 +1,175 @@
+<?php
+/**
+ * Validador de campos obrigatórios para emissão de NFS-e no Padrão Nacional
+ *
+ * Verifica se cada campo que alimenta uma tag XML obrigatória está preenchido
+ * ANTES do envio ao webservice, evitando rejeições em produção.
+ *
+ * Cada erro retornado indica qual tag ficaria vazia/ausente no XML.
+ *
+ * Uso:
+ *   require_once DOL_DOCUMENT_ROOT.'/custom/nfse/lib/nfse_nacional_validator.lib.php';
+ *   $erros = validarDadosNfseNacional($db, $dadosFatura, $dadosEmitente, $dadosDestinatario, $listaServicos);
+ *   if (!empty($erros)) { // exibe erros ao usuário }
+ */
+
+if (!defined('DOL_DOCUMENT_ROOT')) {
+    die('Access denied');
+}
+
+// Prefixos dos itens da lista de serviços que exigem grupo de OBRA (item 7 = 07xxxx)
+// e grupo de EVENTO (item 12 = 12xxxx).
+// Usar prefixo é mais seguro que lista fixa — abrange todos os subtipos do item.
+define('NFSE_NAC_PREFIXO_OBRA',  '07');
+define('NFSE_NAC_PREFIXO_EVENTO', '12');
+
+/**
+ * Valida se os campos obrigatórios para cada tag XML da NFS-e Nacional estão preenchidos.
+ *
+ * Retorna array de strings com as mensagens de erro para exibir ao usuário.
+ * Array vazio = tudo OK para enviar.
+ *
+ * @param object   $db
+ * @param array    $dadosFatura
+ * @param array    $dadosEmitente
+ * @param array    $dadosDestinatario
+ * @param array    $listaServicos
+ * @param int|null $numeroCustom
+ * @return string[]
+ */
+function validarDadosNfseNacional($db, $dadosFatura, $dadosEmitente, $dadosDestinatario, $listaServicos, $numeroCustom = null) {
+    $erros = [];
+
+    // ------------------------------------------------------------------
+    // Serviços (necessário para as demais validações)
+    // ------------------------------------------------------------------
+    if (empty($listaServicos) || !is_array($listaServicos)) {
+        $erros[] = 'Nenhum serviço encontrado na fatura.';
+        return $erros;
+    }
+
+    $primeiroServico = $listaServicos[0];
+
+    // ------------------------------------------------------------------
+    // Emitente
+    // ------------------------------------------------------------------
+    if (empty(preg_replace('/\D/', '', $dadosEmitente['cnpj'] ?? ''))) {
+        $erros[] = '[Emitente] CNPJ não informado (tag CNPJ).';
+    }
+
+    // opSimpNac: para Simples Nacional (CRT=1) o regime deve ser 5 (MEI) ou 6 (ME/EPP).
+    // Se nenhum dos dois, a tag opSimpNac fica sem valor, gerando erro de schema.
+    $crt = (int)($dadosEmitente['crt'] ?? 0);
+    if ($crt === 1) {
+        $regimeTributacao = (int)($dadosEmitente['regimeTributacao'] ?? 0);
+        if (!in_array($regimeTributacao, [5, 6], true)) {
+            $erros[] = '[Emitente] Regime de tributação não identificado para Simples Nacional (tag opSimpNac). '
+                     . 'Configure o regimeTributacao como 5 (MEI) ou 6 (ME/EPP). Valor atual: ' . $regimeTributacao . '.';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Tomador
+    // ------------------------------------------------------------------
+    if (empty(preg_replace('/\D/', '', $dadosDestinatario['cnpj'] ?? ''))) {
+        $erros[] = '[Tomador] CNPJ/CPF não informado (tag CNPJ ou CPF).';
+    }
+
+    if (empty(trim($dadosDestinatario['nome'] ?? ''))) {
+        $erros[] = '[Tomador] Nome/Razão social não informado (tag xNome).';
+    }
+
+    if (empty(trim($dadosDestinatario['endereco'] ?? ''))) {
+        $erros[] = '[Tomador] Logradouro não informado (tag xLgr). Preencha o endereço do cliente.';
+    }
+
+    if (empty(trim($dadosDestinatario['bairro'] ?? ''))) {
+        $erros[] = '[Tomador] Bairro não informado (tag xBairro). Preencha o bairro do cliente.';
+    }
+
+    // ------------------------------------------------------------------
+    // Serviço
+    // ------------------------------------------------------------------
+    $codigoServico = trim($primeiroServico['extrafields']['srv_cod_itemlistaservico'] ?? '');
+
+    if (empty($codigoServico)) {
+        $erros[] = '[Serviço] Código de tributação nacional não informado (tag cTribNac). '
+                 . 'Preencha o campo "Código do serviço (lista nacional)" no item da fatura.';
+    }
+
+    $descParts = [];
+    foreach ($listaServicos as $svc) {
+        if (!empty($svc['descricao'])) {
+            $descParts[] = $svc['descricao'];
+        }
+    }
+    if (empty(trim(implode('', $descParts)))) {
+        $erros[] = '[Serviço] Descrição do serviço não informada (tag xDescServ). '
+                 . 'Preencha o campo "Descrição" nos itens da fatura.';
+    }
+
+    // ------------------------------------------------------------------
+    // Obra — obrigatório para todos os códigos do item 7 da lista (07xxxx)
+    // ------------------------------------------------------------------
+    if (!empty($codigoServico) && substr($codigoServico, 0, 2) === NFSE_NAC_PREFIXO_OBRA) {
+        if (empty(trim($dadosFatura['extrafields']['cObra'] ?? ''))) {
+            $erros[] = 'O código de serviço "' . $codigoServico . '" pertence ao item 7 (construção civil) e exige o código da obra (tag cObra). '
+                     . 'Preencha o campo "cObra" nos dados adicionais da fatura.';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Evento — obrigatório para todos os códigos do item 12 da lista (12xxxx)
+    // ------------------------------------------------------------------
+    if (!empty($codigoServico) && substr($codigoServico, 0, 2) === NFSE_NAC_PREFIXO_EVENTO) {
+        if (empty(trim($dadosFatura['extrafields']['xnomeevento'] ?? ''))) {
+            $erros[] = 'O código de serviço "' . $codigoServico . '" pertence ao item 12 da lista e exige o nome do evento (tag xNome). '
+                     . 'Preencha o campo "xnomeevento" nos dados adicionais da fatura.';
+        }
+        if (empty(trim($dadosFatura['extrafields']['dtini'] ?? ''))) {
+            $erros[] = 'O código de serviço "' . $codigoServico . '" pertence ao item 12 da lista e exige a data de início do evento (tag dtIni). '
+                     . 'Preencha o campo "dtini" nos dados adicionais da fatura.';
+        }
+        if (empty(trim($dadosFatura['extrafields']['dtfim'] ?? ''))) {
+            $erros[] = 'O código de serviço "' . $codigoServico . '" pertence ao item 12 da lista e exige a data de fim do evento (tag dtFim). '
+                     . 'Preencha o campo "dtfim" nos dados adicionais da fatura.';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Valores
+    // ------------------------------------------------------------------
+    $valorTotal = 0.0;
+    foreach ($listaServicos as $svc) {
+        $valorTotal += (float)($svc['total_semtaxa'] ?? 0);
+    }
+    if ($valorTotal <= 0) {
+        $erros[] = '[Valores] O valor total dos serviços deve ser maior que zero (tag vServ).';
+    }
+
+
+    if (!empty($codigoServico) && $codigoServico !== '990101') {
+        $issRetido = (int)($primeiroServico['extrafields']['iss_retido'] ?? -1);
+
+        if ($issRetido !== 1 && $issRetido !== 2) {
+            $erros[] = 'O campo "ISS Retido" precisa ser preenchido nos detalhes do serviço.';
+        } elseif ($issRetido === 1) {
+            // Retido: verifica se há alíquota cadastrada (sem alíquota, pAliq fica vazio)
+            $sqlAlq = "SELECT aliquota_iss FROM " . MAIN_DB_PREFIX . "nfse_codigo_servico WHERE codigo = '" . $db->escape($codigoServico) . "'";
+            $resAlq = $db->query($sqlAlq);
+            if (!$resAlq || $db->num_rows($resAlq) === 0 || (float)$db->fetch_object($resAlq)->aliquota_iss <= 0) {
+                $erros[] = 'ISS marcado como RETIDO mas não há alíquota cadastrada para o serviço "' . $codigoServico . '". '
+                         . 'Cadastre a alíquota na configuração de serviços antes de emitir.';
+            }
+        }
+    }
+
+    if (!empty($erros)) {
+        error_log('' . count($erros) . ' erro(s) antes do envio da fatura ' . (int)($dadosFatura['id'] ?? 0) . ':');
+        foreach ($erros as $e) {
+            error_log('' . $e);
+        }
+    }
+
+    return $erros;
+}

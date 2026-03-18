@@ -1,0 +1,18 @@
+{
+    "atualizacao": "2024-07-26 10:00:00",
+    "tpAmb": 2,
+    "razaosocial": "SUA EMPRESA DE TESTES LTDA",
+    "siglaUF": "ES",
+    "cnpj": "48681521000188",
+    "schemes": "PL_009_V4",
+    "versao": "4.00",
+    "tokenIBPT": "AAAAAA",
+    "CSC": "GPB0J4G0R15E435R2C7N3E0E7F5E4I3V",
+    "CSCid": "000001",
+    "proxyConf": {
+        "proxyIp": "",
+        "proxyPort": "",
+        "proxyUser": "",
+        "proxyPass": ""
+    }
+}

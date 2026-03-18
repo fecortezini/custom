@@ -1,0 +1,24 @@
+# Composer
+/vendor/
+composer.lock
+
+# Generated PDFs
+*.pdf
+*.xml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PHP
+*.log
+*.cache
+
+# Temporary files
+*.tmp
+*.temp
+

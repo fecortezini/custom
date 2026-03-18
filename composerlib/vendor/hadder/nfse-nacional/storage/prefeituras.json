@@ -1,0 +1,12 @@
+{
+    "americana-sp": {
+        "urls": {
+            "sefin_producao": "https://nfse.americana.sp.gov.br/api/adn/dps/recepcao",
+            "sefin_homologacao": "https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao"
+        },
+        "operations":{
+            "emitir_nfse" : "",
+            "cancelar_nfse" : ""
+        }
+    }
+}

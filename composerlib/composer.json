@@ -1,0 +1,31 @@
+{
+    "name": "dolibarr/emissao-nfe",
+    "description": "Emissor de NFe",
+    "type": "project",
+    "require": {
+        "nfephp-org/sped-nfe": "dev-master",
+        "nfephp-org/sped-da": "^1.1",
+        "dompdf/dompdf": "^3.1",
+        "spatie/browsershot": "^5.0",
+        "psr/log": "^1.1|^2.0|^3.0",
+        "mpdf/mpdf": "^8.2",
+        "nfephp-org/sped-cte": "dev-master",
+        "phpseclib/phpseclib": "~3.0",
+        "hadder/nfse-nacional": "dev-master",
+        "tecnickcom/tcpdf": "^6.10",
+        "paseto/nfse-nacional-pdf": "dev-master",
+        "nfephp-org/sped-mdfe": "dev-master"
+    },
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Dolibarr\\EmissaoNfe\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Felipe Cortezini"
+        }
+    ],
+    "minimum-stability": "dev"
+}
