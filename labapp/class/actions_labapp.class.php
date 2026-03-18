@@ -1,29 +1,4 @@
-﻿﻿<?php
-/* ╔══════════════════════════════════════════════════════════════════════════════════╗
- * ║                                                                                ║
- * ║   CLASSE: ActionsLabapp                                                        ║
- * ║   ARQUIVO: custom/labapp/class/actions_labapp.class.php                        ║
- * ║   MÓDULO: Lab Connecta (modLabApp)                                             ║
- * ║                                                                                ║
- * ║   PROPÓSITO:                                                                   ║
- * ║   1. Injetar campos fiscais brasileiros (NFSe/NFe) na página de configuração   ║
- * ║      da empresa (admin/company.php) via sistema de hooks.                      ║
- * ║   2. Injetar seção de configuração de ambiente (Produção/Homologação),         ║
- * ║      certificado digital A1 (.pfx/.p12) e senha do certificado.               ║
- * ║   Tudo SEM editar o código-fonte core do Dolibarr.                             ║
- * ║                                                                                ║
- * ║   SEGURANÇA:                                                                   ║
- * ║   - Inputs sanitizados via GETPOST() nativo + validação de tipos               ║
- * ║   - Constantes salvas via dolibarr_set_const() (usa $db->escape)              ║
- * ║   - Valores no JS usam addslashes() contra XSS                                ║
- * ║   - Senha do certificado criptografada com AES-256-GCM (via nfe_security)     ║
- * ║   - Certificado processado com conversão automática para OpenSSL 3.x          ║
- * ║   - Config sensível em llx_nfe_config (tabela separada)                       ║
- * ║   - CSRF token validado manualmente para o form de certificado                ║
- * ║   - A página admin/company.php já exige permissão de administrador             ║
- * ║                                                                                ║
- * ╚══════════════════════════════════════════════════════════════════════════════════╝ */
-
+﻿<?php
 class ActionsLabapp
 {
     // ┌────────────────────────────────────────────────────────────────────────────────────┐
@@ -189,17 +164,6 @@ class ActionsLabapp
         // 'prd_ncm' => 'before',
 
     );
-
-
-
-
-
-
-
-
-
-
-
 
     /** @var DoliDB Instância do banco de dados do Dolibarr */
     protected $db;
