@@ -1538,15 +1538,20 @@ SEQBLOCK;
      */
     private function doActionsThirdPartyCard($action)
     {
-        // Se não há campos para ocultar, não faz nada
-        if (empty(self::$fieldsToHide)) {
-            return 0;
-        }
-
-        // Converte a lista PHP para JSON (será usada no JavaScript)
+        // Converte a lista de campos a ocultar para JSON
         $fieldsJson = json_encode(self::$fieldsToHide, JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        ob_start(function ($html) use ($fieldsJson) {
+        // ── Extrafields a reposicionar logo abaixo do campo Cidade ──────────────
+        // Chave 'selector'  → ID do <input>/<select> no modo edição/criação
+        // Chave 'viewLabel' → Texto exato da label <td> no modo visualização
+        $reorderJson = json_encode(array(
+            array('selector' => '#options_bairro',             'viewLabel' => 'Bairro'),
+            array('selector' => '#options_numero_de_endereco', 'viewLabel' => 'Número de Endereço'),
+            array('selector' => '#options_regime_tributario',  'viewLabel' => 'Regime Tributário'),
+            array('selector' => '#options_indiedest',          'viewLabel' => 'Indicador IE Destinatário'),
+        ), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+
+        ob_start(function ($html) use ($fieldsJson, $reorderJson) {
 
             $script = <<<JSHIDE
 <script>
@@ -1618,11 +1623,92 @@ SEQBLOCK;
 </script>
 JSHIDE;
 
+            $reorderScript = <<<JSREORDER
+<script>
+/**
+ * HOOK LabApp — Reposicionar extrafields de endereço na ficha de terceiros
+ *
+ * Move os extrafields Bairro, Número, Regime Tributário e Ind. IE Dest.
+ * para logo abaixo do campo Cidade, mantendo coerência com o bloco de endereço.
+ *
+ * Funciona em modo edição/criação (busca por #options_CAMPO) e em modo
+ * visualização (busca pelo texto da label <td>).
+ */
+(function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var fieldsToReorder = {$reorderJson};
+
+        // ── Âncora: <tr> do campo Cidade (logo após CEP) ──────────────
+        var anchorRow = null;
+
+        // Modo edição/criação: elemento #town existe
+        var townEl = document.querySelector('#town');
+        if (townEl) {
+            anchorRow = townEl.closest('tr');
+        }
+
+        // Modo visualização: busca pela label "Cidade" (ou "Town")
+        if (!anchorRow) {
+            var allTds = document.querySelectorAll('td');
+            for (var k = 0; k < allTds.length; k++) {
+                var t = (allTds[k].textContent || '').trim();
+                if (t === 'Cidade' || t === 'Town') {
+                    anchorRow = allTds[k].closest('tr');
+                    break;
+                }
+            }
+        }
+
+        if (!anchorRow) return;
+
+        // Insere cada campo logo após a âncora, na ordem definida
+        var insertAfter = anchorRow;
+
+        for (var i = 0; i < fieldsToReorder.length; i++) {
+            var field = fieldsToReorder[i];
+            var targetRow = null;
+
+            // Modo edição/criação: busca pelo id do input/select
+            if (field.selector) {
+                var el = document.querySelector(field.selector);
+                if (el) targetRow = el.closest('tr');
+            }
+
+            // Modo visualização: busca pelo texto exato da label <td>
+            if (!targetRow && field.viewLabel) {
+                var tds = document.querySelectorAll('td');
+                for (var j = 0; j < tds.length; j++) {
+                    if ((tds[j].textContent || '').trim() === field.viewLabel) {
+                        targetRow = tds[j].closest('tr');
+                        break;
+                    }
+                }
+            }
+
+            if (targetRow && targetRow !== insertAfter) {
+                var next = insertAfter.nextSibling;
+                if (next) {
+                    insertAfter.parentNode.insertBefore(targetRow, next);
+                } else {
+                    insertAfter.parentNode.appendChild(targetRow);
+                }
+                insertAfter = targetRow;
+            }
+        }
+    });
+})();
+</script>
+JSREORDER;
+
+            $allScripts = $script . "\n" . $reorderScript;
+
             $pos = strripos($html, '</body>');
             if ($pos !== false) {
-                $html = substr($html, 0, $pos) . $script . substr($html, $pos);
+                $html = substr($html, 0, $pos) . $allScripts . substr($html, $pos);
             } else {
-                $html .= $script;
+                $html .= $allScripts;
             }
 
             return $html;
