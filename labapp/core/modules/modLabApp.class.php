@@ -56,7 +56,7 @@ class modLabApp extends DolibarrModules
         $extrafields->addExtraField('bairro', 'Bairro', 'varchar', 100, 255, 'societe', 0, 1, '', '', 1, '', 1);
         $extrafields->addExtraField('numero_de_endereco', 'Número de Endereço', 'int', 100, 8, 'societe', 0, 1, '', '', 1, '', 1);
         //$extrafields->addExtraField('rua', 'Rua', 'varchar', 100, 255, 'societe', 0, 0, '', '', 1, '', 1);
-        $extrafields->addExtraField('regime_tributario', 'Regime Tributário', 'select', 100, '', 'societe', 0, 1, '', serialize(['options' => [1 => 'Simples Nacional', 2 => 'Simples Nacional c/ excesso', 3 => 'Lucro Presumido', 4 => 'Lucro Real']]), 1, [], 1, '', '', '', 1, '', 1, 0, 1, []);
+        $extrafields->addExtraField('regime_tributario', 'Regime Tributário', 'select', 100, '', 'societe', 0, 1, '', serialize(['options' => ['1' => 'Simples Nacional', '2' => 'Simples Nacional c/ excesso', '3' => 'Lucro Presumido', '4' => 'Lucro Real']]), 1, '', 1, '', '', '');
     }
     public function init($options = '')
     {

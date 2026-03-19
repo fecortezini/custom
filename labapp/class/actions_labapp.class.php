@@ -1,59 +1,6 @@
 <?php
 class ActionsLabapp
 {
-    // ┌────────────────────────────────────────────────────────────────────────────────────┐
-    // │ CONFIGURAÇÃO: CAMPOS A OCULTAR NA FICHA DE TERCEIROS (societe/card.php)             │
-    // │                                                                                    │
-    // │ Para ocultar um campo, basta adicionar o seletor CSS neste array.                  │
-    // │ O script irá esconder a linha <tr> inteira que contém o elemento.                   │
-    // │                                                                                    │
-    // │ COMO ENCONTRAR O SELETOR:                                                          │
-    // │   1. Abra societe/card.php no navegador                                            │
-    // │   2. Clique com botão direito no campo → "Inspecionar"                             │
-    // │   3. Procure o atributo id="" do <input>, <select> ou <textarea>                   │
-    // │   4. Use '#id_do_campo' como seletor (ex: '#address', '#fax', '#url')              │
-    // │                                                                                    │
-    // │ SELETORES DISPONÍVEIS EM societe/card.php:                                         │
-    // │   '#address'          → Campo Endereço (textarea)                                  │
-    // │   '#zipcode'          → Campo CEP                                                  │
-    // │   '#town'             → Campo Cidade                                               │
-    // │   '#phone'            → Campo Telefone                                             │
-    // │   '#phone_mobile'     → Campo Celular                                              │
-    // │   '#fax'              → Campo Fax                                                  │
-    // │   '#email'            → Campo E-mail                                               │
-    // │   '#url'              → Campo Website/URL                                          │
-    // │   '#barcode'          → Campo Código de Barras                                     │
-    // │   '#status'           → Campo Status ativo/inativo                                 │
-    // │                                                                                    │
-    // │ NOTA: 'viewLabel' é o texto da label no modo visualização (sem formulário).        │
-    // │ Deixe vazio ('') se quiser ocultar apenas no modo edição/criação.                  │
-    // └────────────────────────────────────────────────────────────────────────────────────┘
-
-    /**
-     * Lista de campos a ocultar na página de terceiros (societe/card.php).
-     *
-     * Cada entrada é um array com:
-     *   'selector'   => Seletor jQuery do input/textarea/select (modo criação/edição)
-     *   'viewLabel'  => Texto exato da label na coluna <td> (modo visualização)
-     *                   Se vazio, o campo só será ocultado nos modos criação/edição.
-     *
-     * Para ocultar mais campos, basta adicionar novas entradas aqui.
-     */
-    // ┌────────────────────────────────────────────────────────────────────────────────────┐
-    // │ CONFIGURAÇÃO: CAMPOS NATIVOS OBRIGATÓRIOS NA FICHA DE TERCEIROS                    │
-    // │                                                                                    │
-    // │ Define quais campos nativos de societe/card.php são obrigatórios.                  │
-    // │ A validação ocorre em PHP (server-side) + o label recebe a classe                 │
-    // │ 'fieldrequired' do Dolibarr (negrito + asterisco), igual aos extrafields.          │
-    // │                                                                                    │
-    // │ Cada entrada:
-    // │   'postKey'  → nome do campo no POST  (ex: 'zipcode', 'phone')                    │
-    // │   'selector' → id do <input>/<select> (ex: '#zipcode')                            │
-    // │   'label'    → texto para mensagem de erro                                        │
-    // │   'labelFor' → valor do for= da <label> (geralmente igual ao id sem '#')          │
-    // │                                                                                    │
-    // │ NOTA: 'name' (Razão Social) já é validado pelo core do Dolibarr.                  │
-    // └────────────────────────────────────────────────────────────────────────────────────┘
     private static $nativeRequiredFields = array(
 
         // array('postKey' => 'name',       'selector' => '#name',       'label' => 'Razão Social', 'labelFor' => 'name'),       // já obrigatório no core
