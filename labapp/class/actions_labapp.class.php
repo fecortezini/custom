@@ -11,7 +11,7 @@ class ActionsLabapp
 
         // ── CONTATO (descomente para tornar obrigatório) ──────────────────────────────────
         //array('postKey' => 'phone',      'selector' => '#phone',      'label' => 'Telefone',       'labelFor' => 'phone'),
-        array('postKey' => 'idprof1',   'selector' => '#idprof1',      'label' => 'CNPJ',         'labelFor' => 'idprof1'),
+        array('postKey' => 'idprof1',   'selector' => '#idprof1',      'label' => 'CNPJ',         'labelFor' => 'CNPJ'),
         // array('postKey' => 'phone_mobile', 'selector' => '#phone_mobile', 'label' => 'Celular', 'labelFor' => 'phone_mobile'),
 
     );
