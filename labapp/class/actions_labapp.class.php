@@ -2114,76 +2114,87 @@ JS;
 
 
     public function getFormMail($parameters, &$object, &$action, $hookmanager)
-    {
-        $ehNfse = false;
-        $ehNfe = false;
-
-        // Só age se o trackid indicar uma fatura: 'inv{id}'
-        $trackid = isset($object->trackid) ? $object->trackid : '';
-        if (!preg_match('/^inv(\d+)$/', $trackid, $m)) {
-            return 0;
-        }
-        $factureId = (int)$m[1];
-
-        $sqlBuscaNfse = "SELECT * FROM ".MAIN_DB_PREFIX."nfse_nacional_emitidas WHERE id_fatura = ".$factureId.";";
-        $sqlBuscaNfe = "SELECT * FROM ".MAIN_DB_PREFIX."nfe_emitidas WHERE fk_facture = ".$factureId.";";
-
-        $resBuscaNfse = $this->db->query($sqlBuscaNfse);
-        $resBuscaNfe = $this->db->query($sqlBuscaNfe);
-
-        if ($resBuscaNfse && $this->db->num_rows($resBuscaNfse) > 0) {
-            $sqlNfse = "SELECT id, numero_nfse, numero_dps, chave_acesso, pdf_danfse
-                FROM ".MAIN_DB_PREFIX."nfse_nacional_emitidas
-                WHERE id_fatura = ".$factureId."
-                  AND pdf_danfse IS NOT NULL
-                  AND LENGTH(pdf_danfse) > 0
-                ORDER BY id DESC
-                LIMIT 1";
-            $res = $this->db->query($sqlNfse);
-            $row = $this->db->fetch_object($res);
-            $pdfContentNfse = $row->pdf_danfse;
-        }
-        if ($resBuscaNfe && $this->db->num_rows($resBuscaNfe) > 0) {
-            $sqlNfe = "SELECT id, chave, numero_nfe, pdf_file
-                FROM ".MAIN_DB_PREFIX."nfe_emitidas
-                WHERE fk_facture = ".$factureId."
-                  AND pdf_file IS NOT NULL
-                  AND LENGTH(pdf_file) > 0
-                ORDER BY id DESC
-                LIMIT 1";
-            $resNfe = $this->db->query($sqlNfe);
-            $row2 = $this->db->fetch_object($resNfe);
-            $pdfContentNfe = $row2->pdf_file;
-        }
-        
-
-        if (is_resource($pdfContentNfse)) {
-            $pdfContentNfse = stream_get_contents($pdfContentNfse);
-        }
-        if (is_resource($pdfContentNfe)) {
-            $pdfContentNfe = stream_get_contents($pdfContentNfe);
-        }
-
-        if (empty($pdfContentNfe) && empty($pdfContentNfse)) {
-            return 0;
-        }
-
-        $chaveNfe = !empty($row2->chave) ? $row2->chave : $row2->chave;
-        $chaveNfse = !empty($row->chave_acesso) ? $row->chave_acesso : $row->chave_acesso;
-        $filename = $chaveNfse ? 'DANFSE-'. $chaveNfse . '.pdf': 'DANFE-'.$chaveNfe . '.pdf';
-
-        global $conf, $user;
-        $vardir    = $conf->user->dir_output . '/' . $user->id;
-        $uploadDir = $vardir . '/temp/';
-        if (!is_dir($uploadDir)) {
-            dol_mkdir($uploadDir);
-        }
-
-        $filepath = $uploadDir . $filename;
-        file_put_contents($filepath, $pdfContentNfe ? $pdfContentNfe : $pdfContentNfse);
-
-        $object->add_attached_files($filepath, $filename, 'application/pdf');
-
+{
+    $trackid = isset($object->trackid) ? $object->trackid : '';
+    if (!preg_match('/^inv(\d+)$/', $trackid, $m)) {
         return 0;
     }
+    $factureId = (int)$m[1];
+
+    // ── Inicializa variáveis para evitar "undefined variable" ──
+    $pdfContentNfse = null;
+    $pdfContentNfe  = null;
+    $row            = null;
+    $row2           = null;
+
+    $resBuscaNfse = $this->db->query(
+        "SELECT id FROM ".MAIN_DB_PREFIX."nfse_nacional_emitidas WHERE id_fatura = ".$factureId
+    );
+    if ($resBuscaNfse && $this->db->num_rows($resBuscaNfse) > 0) {
+        $res = $this->db->query(
+            "SELECT id, numero_nfse, numero_dps, chave_acesso, pdf_danfse
+             FROM ".MAIN_DB_PREFIX."nfse_nacional_emitidas
+             WHERE id_fatura = ".$factureId."
+               AND pdf_danfse IS NOT NULL
+               AND LENGTH(pdf_danfse) > 0
+             ORDER BY id DESC LIMIT 1"
+        );
+        if ($res) {
+            $row = $this->db->fetch_object($res);
+            if ($row) {
+                $pdfContentNfse = $row->pdf_danfse;
+            }
+        }
+    }
+
+    $resBuscaNfe = $this->db->query(
+        "SELECT id FROM ".MAIN_DB_PREFIX."nfe_emitidas WHERE fk_facture = ".$factureId
+    );
+    if ($resBuscaNfe && $this->db->num_rows($resBuscaNfe) > 0) {
+        $resNfe = $this->db->query(
+            "SELECT id, chave, numero_nfe, pdf_file
+             FROM ".MAIN_DB_PREFIX."nfe_emitidas
+             WHERE fk_facture = ".$factureId."
+               AND pdf_file IS NOT NULL
+               AND LENGTH(pdf_file) > 0
+             ORDER BY id DESC LIMIT 1"
+        );
+        if ($resNfe) {
+            $row2 = $this->db->fetch_object($resNfe);
+            if ($row2) {
+                $pdfContentNfe = $row2->pdf_file;
+            }
+        }
+    }
+
+    if (is_resource($pdfContentNfse)) {
+        $pdfContentNfse = stream_get_contents($pdfContentNfse);
+    }
+    if (is_resource($pdfContentNfe)) {
+        $pdfContentNfe = stream_get_contents($pdfContentNfe);
+    }
+
+    if (empty($pdfContentNfe) && empty($pdfContentNfse)) {
+        return 0;
+    }
+
+    // ── Extrai chave e monta nome do arquivo ──
+    $chaveNfe  = ($row2 && !empty($row2->chave))        ? $row2->chave        : '';
+    $chaveNfse = ($row  && !empty($row->chave_acesso))  ? $row->chave_acesso  : '';
+    $filename  = $chaveNfse
+        ? 'DANFSE-' . $chaveNfse . '.pdf'
+        : 'DANFE-'  . $chaveNfe  . '.pdf';
+
+    global $conf, $user;
+    $uploadDir = $conf->user->dir_output . '/' . $user->id . '/temp/';
+    if (!is_dir($uploadDir)) {
+        dol_mkdir($uploadDir);
+    }
+
+    $pdfFinal = !empty($pdfContentNfe) ? $pdfContentNfe : $pdfContentNfse;
+    file_put_contents($uploadDir . $filename, $pdfFinal);
+    $object->add_attached_files($uploadDir . $filename, $filename, 'application/pdf');
+
+    return 0;
+}
 }
