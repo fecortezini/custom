@@ -302,7 +302,7 @@ class modNFSe extends DolibarrModules
             '3205200' => 'Vila Velha',
             '3205309' => 'Vitória'
         ];
-        $extrafields->addExtraField('muni_prest', 'Município de Prestação', 'select', 100, '', 'facture', 0, 0, '', serialize(['options' => $options]), 1, [], 4, '', '', '', 1, '', 1, 0, 1, []);
+        $extrafields->addExtraField('muni_prest', 'Município de Prestação', 'select', 100, '', 'facture', 0, 0, '', serialize(['options' => $options]), 1, '', 4);
         /// inicio dos novos extrafields
         $extrafields->addExtraField('separador_obra', 'Obra', 'separate', 100, '', 'facture', 0, 0, '', 'a:1:{s:7:"options";a:1:{i:1;s:7:"/custom";}}', 1, '', 4, '', '', '', 1, '', 1, 0, 1);
         $extrafields->addExtraField('inscImobFisc', 'Inscrição imobiliária fiscal ', 'varchar', 100, 30, 'facture', 0, 0, '', '', 1, '', 1);
