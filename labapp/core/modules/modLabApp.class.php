@@ -30,6 +30,7 @@ class modLabApp extends DolibarrModules
             1 => array('MAIN_APPLICATION_TITLE', 'chaine', 'Lab Connecta', '', 0, 'current', 1),
             2 => array('MAIN_DISABLE_PDF_THUMBS', 'chaine', '1', '', 0, 'current', 1),
             3 => array('MAIN_REPLACE_TRANS_pt_BR', 'chaine', 'Dolibarr:Lab Connecta;Dolibarr ERP CRM:Lab Connecta;dolibarr:labconnecta', '', 0, 'current', 1),
+            4 => array('MAIN_INFO_SOCIETE_PROFID1LABEL', 'chaine', 'CNPJ', '', 0, 'current', 1),
         );
         $this->module_parts = array(
             'hooks' => array(
