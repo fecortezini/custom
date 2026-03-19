@@ -163,6 +163,12 @@ class ActionsNfe
     public function doActions($parameters, &$object, &$action, $hookmanager)
     {
         $contexts = empty($parameters['context']) ? array() : explode(':', $parameters['context']);
+
+        // ── Ficha de terceiros: valida e reposiciona indiedest ──────────────────
+        if (in_array('thirdpartycard', $contexts)) {
+            return $this->doActionsThirdPartyCard($action);
+        }
+
         // NOVO: Sanear extrafields da fatura e das linhas o mais cedo possível
         if (in_array('invoicecard', $contexts)) {
             // Saneia extrafields do cabeçalho da fatura e aplica defaults
@@ -1069,6 +1075,86 @@ BLOQUEIO;
             );
             return 1; // indica que fornecemos a confirmação
         }
+
+        return 0;
+    }
+
+    /**
+     * Handler para a ficha de terceiros (societe/card.php) — módulo NFe
+     *
+     * Responsabilidades:
+     *   1. Valida (server-side) que o campo extrafield "Indicador IE Destinatário"
+     *      (options_indiedest) está preenchido ao criar/salvar um terceiro.
+     *   2. Reposiciona o campo no DOM logo após CNPJ (via JS).
+     *   3. Marca o label do campo com a classe 'fieldrequired' do Dolibarr (negrito).
+     *
+     * Só é carregado quando o módulo NF-e está ativo — usuários que usam
+     * apenas NFS-e não verão nem a validação nem o campo obrigatório.
+     */
+    private function doActionsThirdPartyCard(&$action)
+    {
+        // ── VALIDAÇÃO PHP SERVER-SIDE ────────────────────────────────────────────
+        if (in_array($action, array('add', 'update')) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $val = GETPOST('options_indiedest', 'alphanohtml');
+            if (trim((string)$val) === '') {
+                setEventMessages(
+                    'Campos obrigatórios não preenchidos: Indicador IE Destinatário',
+                    null,
+                    'errors'
+                );
+                $action = ($action === 'add') ? 'create' : 'edit';
+                return 0;
+            }
+        }
+
+        // ── INJEÇÃO JS: marcar obrigatório (reposicionamento feito pelo LabApp) ──
+        ob_start(function ($html) {
+
+            $script = <<<JSNFE
+<script>
+/**
+ * NFe — Indicador IE Destinatário (options_indiedest)
+ *
+ * Marca o campo como obrigatório visualmente (classe fieldrequired do Dolibarr)
+ * e adiciona o atributo 'required' para validação nativa do browser.
+ *
+ * O reposicionamento do campo no formulário é feito pelo módulo LabApp
+ * (sempre ativo), garantindo a ordem correta independente do módulo NFe.
+ */
+(function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+
+        var el = document.querySelector('#options_indiedest');
+        if (!el) return;
+
+        // Marca o input como required (validação nativa do browser)
+        el.setAttribute('required', 'required');
+
+        // Marca o label/td com 'fieldrequired' (negrito nativo do Dolibarr)
+        var tr = el.closest('tr');
+        if (!tr) return;
+
+        var lbl = tr.querySelector('label[for="options_indiedest"]');
+        if (lbl) {
+            lbl.classList.add('fieldrequired');
+        } else {
+            var labelTd = tr.querySelector('td.titlefield, td.titlefieldmiddle, td:first-child');
+            if (labelTd) labelTd.classList.add('fieldrequired');
+        }
+    });
+})();
+</script>
+JSNFE;
+
+            $pos = strripos($html, '</body>');
+            if ($pos !== false) {
+                $html = substr($html, 0, $pos) . $script . substr($html, $pos);
+            } else {
+                $html .= $script;
+            }
+            return $html;
+        });
 
         return 0;
     }

@@ -39,6 +39,36 @@ class ActionsLabapp
      *
      * Para ocultar mais campos, basta adicionar novas entradas aqui.
      */
+    // ┌────────────────────────────────────────────────────────────────────────────────────┐
+    // │ CONFIGURAÇÃO: CAMPOS NATIVOS OBRIGATÓRIOS NA FICHA DE TERCEIROS                    │
+    // │                                                                                    │
+    // │ Define quais campos nativos de societe/card.php são obrigatórios.                  │
+    // │ A validação ocorre em PHP (server-side) + o label recebe a classe                 │
+    // │ 'fieldrequired' do Dolibarr (negrito + asterisco), igual aos extrafields.          │
+    // │                                                                                    │
+    // │ Cada entrada:
+    // │   'postKey'  → nome do campo no POST  (ex: 'zipcode', 'phone')                    │
+    // │   'selector' → id do <input>/<select> (ex: '#zipcode')                            │
+    // │   'label'    → texto para mensagem de erro                                        │
+    // │   'labelFor' → valor do for= da <label> (geralmente igual ao id sem '#')          │
+    // │                                                                                    │
+    // │ NOTA: 'name' (Razão Social) já é validado pelo core do Dolibarr.                  │
+    // └────────────────────────────────────────────────────────────────────────────────────┘
+    private static $nativeRequiredFields = array(
+
+        // array('postKey' => 'name',       'selector' => '#name',       'label' => 'Razão Social', 'labelFor' => 'name'),       // já obrigatório no core
+
+        // ── ENDEREÇO 
+        array('postKey' => 'zipcode',    'selector' => '#zipcode',    'label' => 'CEP',            'labelFor' => 'zipcode'),
+        array('postKey' => 'town',       'selector' => '#town',       'label' => 'Cidade',         'labelFor' => 'town'),
+
+        // ── CONTATO (descomente para tornar obrigatório) ──────────────────────────────────
+        //array('postKey' => 'phone',      'selector' => '#phone',      'label' => 'Telefone',       'labelFor' => 'phone'),
+        array('postKey' => 'idprof1',   'selector' => '#idprof1',      'label' => 'CNPJ',         'labelFor' => 'idprof1'),
+        // array('postKey' => 'phone_mobile', 'selector' => '#phone_mobile', 'label' => 'Celular', 'labelFor' => 'phone_mobile'),
+
+    );
+
     private static $fieldsToHide = array(
 
         //array('selector' => '#address',  'viewLabel' => 'Address'),
@@ -244,7 +274,7 @@ class ActionsLabapp
         // O contexto 'thirdpartycard' é registrado pela página societe/card.php
         // na linha: $hookmanager->initHooks(array('thirdpartycard', 'globalcard'));
         if (in_array('thirdpartycard', $contexts)) {
-            return $this->doActionsThirdPartyCard($action);
+            return $this->doActionsThirdPartyCard($action); // $action é &ref em doActions, a assinatura do método aceita &$action
         }
 
         // Se não for o contexto esperado, retorna 0 (não faz nada, não bloqueia)
@@ -1536,22 +1566,66 @@ SEQBLOCK;
      * @param  string $action Ação corrente do formulário
      * @return int    0 = processamento normal
      */
-    private function doActionsThirdPartyCard($action)
+    /**
+     * Por que &$action?
+     * O Dolibarr passa $action por referência desde card.php → HookManager → doActions.
+     * Se a validação falhar, revertemos $action para 'create'/'edit' aqui, e essa
+     * mudança propaga de volta para card.php, que então re-exibe o formulário em vez
+     * de executar a criação/atualização.
+     */
+    private function doActionsThirdPartyCard(&$action)
     {
+        // ── VALIDAÇÃO PHP SERVER-SIDE ────────────────────────────────────────────
+        // Só valida em POST ao criar (add) ou salvar edição (update)
+        if (in_array($action, array('add', 'update')) && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $missingLabels = array();
+            foreach (self::$nativeRequiredFields as $field) {
+                $val = GETPOST($field['postKey'], 'alphanohtml');
+                if (trim((string)$val) === '') {
+                    $missingLabels[] = $field['label'];
+                }
+            }
+            if (!empty($missingLabels)) {
+                setEventMessages(
+                    'Campos obrigatórios não preenchidos: ' . implode(', ', $missingLabels),
+                    null,
+                    'errors'
+                );
+                // Reverte $action para re-exibir o formulário sem criar/alterar o registro
+                $action = ($action === 'add') ? 'create' : 'edit';
+                return 0;
+            }
+        }
+
         // Converte a lista de campos a ocultar para JSON
         $fieldsJson = json_encode(self::$fieldsToHide, JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        // ── Extrafields a reposicionar logo abaixo do campo Cidade ──────────────
-        // Chave 'selector'  → ID do <input>/<select> no modo edição/criação
-        // Chave 'viewLabel' → Texto exato da label <td> no modo visualização
+        // JSON dos campos nativos obrigatórios (para o JS marcar os labels)
+        $requiredFieldsJson = json_encode(self::$nativeRequiredFields, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+
+        // ── Grupos de extrafields a reposicionar, cada um com sua própria âncora ──
+        // 'anchor'  → campo nativo de referência (após ele os campos são inseridos)
+        // 'fields'  → lista de extrafields a mover, na ordem desejada
         $reorderJson = json_encode(array(
-            array('selector' => '#options_bairro',             'viewLabel' => 'Bairro'),
-            array('selector' => '#options_numero_de_endereco', 'viewLabel' => 'Número de Endereço'),
-            array('selector' => '#options_regime_tributario',  'viewLabel' => 'Regime Tributário'),
-            array('selector' => '#options_indiedest',          'viewLabel' => 'Indicador IE Destinatário'),
+            array(
+                'anchor' => array('selector' => '#town',     'viewLabel' => 'Município'),
+                'fields' => array(
+                    array('selector' => '#options_bairro',             'viewLabel' => 'Bairro'),
+                    array('selector' => '#options_numero_de_endereco', 'viewLabel' => 'Número de Endereço'),
+                ),
+            ),
+            array(
+                'anchor' => array('selector' => '#idprof1',  'viewLabel' => 'CNPJ'),
+                'fields' => array(
+                    array('selector' => '#options_regime_tributario', 'viewLabel' => 'Regime Tributário'),
+                    // indiedest é sempre posicionado aqui pelo labapp;
+                    // a obrigatoriedade/validação é gerenciada pelo módulo NFe.
+                    array('selector' => '#options_indiedest',         'viewLabel' => 'Indicador IE Destinatário'),
+                ),
+            ),
         ), JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
 
-        ob_start(function ($html) use ($fieldsJson, $reorderJson) {
+        ob_start(function ($html) use ($fieldsJson, $reorderJson, $requiredFieldsJson) {
 
             $script = <<<JSHIDE
 <script>
@@ -1626,75 +1700,55 @@ JSHIDE;
             $reorderScript = <<<JSREORDER
 <script>
 /**
- * HOOK LabApp — Reposicionar extrafields de endereço na ficha de terceiros
+ * HOOK LabApp — Reposicionar extrafields na ficha de terceiros
  *
- * Move os extrafields Bairro, Número, Regime Tributário e Ind. IE Dest.
- * para logo abaixo do campo Cidade, mantendo coerência com o bloco de endereço.
- *
- * Funciona em modo edição/criação (busca por #options_CAMPO) e em modo
- * visualização (busca pelo texto da label <td>).
+ * Cada grupo define sua própria âncora e a lista de campos a inserir após ela.
+ * Grupos:
+ *   1. Bairro + Número → logo abaixo de Cidade
+ *   2. Regime Tributário + Ind. IE Dest. → logo abaixo de CNPJ
  */
 (function() {
     'use strict';
     document.addEventListener('DOMContentLoaded', function() {
 
-        var fieldsToReorder = {$reorderJson};
+        var groups = {$reorderJson};
 
-        // ── Âncora: <tr> do campo Cidade (logo após CEP) ──────────────
-        var anchorRow = null;
-
-        // Modo edição/criação: elemento #town existe
-        var townEl = document.querySelector('#town');
-        if (townEl) {
-            anchorRow = townEl.closest('tr');
-        }
-
-        // Modo visualização: busca pela label "Cidade" (ou "Town")
-        if (!anchorRow) {
-            var allTds = document.querySelectorAll('td');
-            for (var k = 0; k < allTds.length; k++) {
-                var t = (allTds[k].textContent || '').trim();
-                if (t === 'Cidade' || t === 'Town') {
-                    anchorRow = allTds[k].closest('tr');
-                    break;
-                }
+        function findRow(selectorOrLabel) {
+            // Tenta pelo seletor CSS primeiro
+            if (selectorOrLabel.selector) {
+                var el = document.querySelector(selectorOrLabel.selector);
+                if (el) return el.closest('tr');
             }
-        }
-
-        if (!anchorRow) return;
-
-        // Insere cada campo logo após a âncora, na ordem definida
-        var insertAfter = anchorRow;
-
-        for (var i = 0; i < fieldsToReorder.length; i++) {
-            var field = fieldsToReorder[i];
-            var targetRow = null;
-
-            // Modo edição/criação: busca pelo id do input/select
-            if (field.selector) {
-                var el = document.querySelector(field.selector);
-                if (el) targetRow = el.closest('tr');
-            }
-
-            // Modo visualização: busca pelo texto exato da label <td>
-            if (!targetRow && field.viewLabel) {
+            // Fallback: busca pelo texto da label em <td>
+            if (selectorOrLabel.viewLabel) {
                 var tds = document.querySelectorAll('td');
-                for (var j = 0; j < tds.length; j++) {
-                    if ((tds[j].textContent || '').trim() === field.viewLabel) {
-                        targetRow = tds[j].closest('tr');
-                        break;
+                for (var k = 0; k < tds.length; k++) {
+                    if ((tds[k].textContent || '').trim() === selectorOrLabel.viewLabel) {
+                        return tds[k].closest('tr');
                     }
                 }
             }
+            return null;
+        }
 
-            if (targetRow && targetRow !== insertAfter) {
-                var next = insertAfter.nextSibling;
-                if (next) {
-                    insertAfter.parentNode.insertBefore(targetRow, next);
-                } else {
-                    insertAfter.parentNode.appendChild(targetRow);
+        for (var g = 0; g < groups.length; g++) {
+            var group = groups[g];
+            var anchorRow = findRow(group.anchor);
+            if (!anchorRow) continue;
+
+            var insertAfter = anchorRow;
+
+            for (var i = 0; i < group.fields.length; i++) {
+                var targetRow = findRow(group.fields[i]);
+                if (targetRow && targetRow !== insertAfter) {
+                    var next = insertAfter.nextSibling;
+                    if (next) {
+                        insertAfter.parentNode.insertBefore(targetRow, next);
+                    } else {
+                        insertAfter.parentNode.appendChild(targetRow);
+                    }
+                    insertAfter = targetRow;
                 }
-                insertAfter = targetRow;
             }
         }
     });
@@ -1702,7 +1756,68 @@ JSHIDE;
 </script>
 JSREORDER;
 
-            $allScripts = $script . "\n" . $reorderScript;
+            $requiredScript = <<<JSREQUIRED
+<script>
+/**
+ * HOOK LabApp — Marcar campos nativos obrigatórios na ficha de terceiros
+ *
+ * Campos nativos do Dolibarr usam <td class="titlefield"> como célula de label,
+ * não <label for="...">. Por isso buscamos o <tr> do input e estilizamos o
+ * primeiro <td> da linha, adicionando a classe fieldrequired (negrito nativo
+ * do Dolibarr, idêntico ao visual dos extrafields obrigatórios).
+ *
+ * Também adiciona o atributo HTML "required" no input para validação do browser.
+ * Só atua nos modos criação e edição.
+ */
+(function() {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Só age se há formulário editável na página
+        var form = document.querySelector('form');
+        if (!form) return;
+        if (!form.querySelector('input[type="text"], input[type="number"], textarea, select')) return;
+
+        var requiredFields = {$requiredFieldsJson};
+
+        for (var i = 0; i < requiredFields.length; i++) {
+            var field = requiredFields[i];
+            if (!field.selector) continue;
+
+            var el = document.querySelector(field.selector);
+            if (!el) continue;
+
+            // Marca o input como required (validação nativa do browser)
+            el.setAttribute('required', 'required');
+
+            // Encontra a <tr> que contém o input
+            var tr = el.closest('tr');
+            if (!tr) continue;
+
+            // Tenta primeiro label[for] (extrafields e alguns campos nativos usam isso)
+            var labeled = null;
+            if (field.labelFor) {
+                labeled = tr.querySelector('label[for="' + field.labelFor + '"]');
+            }
+
+            if (labeled) {
+                // Caso normal: existe <label for="..."> — adiciona classe diretamente
+                labeled.classList.add('fieldrequired');
+            } else {
+                // Campos nativos do Dolibarr: o "label" é um <td class="titlefield">
+                // Adiciona fieldrequired no <td> para ficar em negrito igual extrafields
+                var labelTd = tr.querySelector('td.titlefield, td.titlefieldmiddle, td:first-child');
+                if (labelTd) {
+                    labelTd.classList.add('fieldrequired');
+                }
+            }
+        }
+    });
+})();
+</script>
+JSREQUIRED;
+
+            $allScripts = $script . "\n" . $reorderScript . "\n" . $requiredScript;
 
             $pos = strripos($html, '</body>');
             if ($pos !== false) {
