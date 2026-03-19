@@ -3,7 +3,7 @@ class ActionsLabapp
 {
     private static $nativeRequiredFields = array(
 
-        // array('postKey' => 'name',       'selector' => '#name',       'label' => 'Razão Social', 'labelFor' => 'name'),       // já obrigatório no core
+        // array('postKey' => 'name',       'selector' => '#name',       'label' => 'Razão Social', 'labelFor' => 'name'),       // já obrigatório no core  
 
         // ── ENDEREÇO 
         array('postKey' => 'zipcode',    'selector' => '#zipcode',    'label' => 'CEP',            'labelFor' => 'zipcode'),
@@ -240,15 +240,11 @@ class ActionsLabapp
         // $db   → Instância do banco de dados
         global $conf, $db;
 
-        // Se não há campos para ocultar, não faz nada
-        if (empty(self::$fieldsToHideAdmin)) {
-            return 0;
-        }
-
         // Converte a lista PHP para JSON (será usada no JavaScript)
         $fieldsJson = json_encode(self::$fieldsToHideAdmin, JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        ob_start(function ($html) use ($fieldsJson) {
+        // Só instala o ob_start de ocultação se houver campos para ocultar
+        if (!empty(self::$fieldsToHideAdmin)) ob_start(function ($html) use ($fieldsJson) {
 
             $script = <<<JSHIDE
 <script>
