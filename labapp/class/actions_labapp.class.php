@@ -249,9 +249,7 @@ class ActionsLabapp
         if (getDolGlobalString('LABAPP_MODULES_INITIALIZED') === '1') return;
 
         $modulesToActivate = array(
-            'LabApp',
-            'Nfse',
-            'Nfe',
+            'LabApp'
         );
 
         foreach ($modulesToActivate as $modname) {
@@ -262,7 +260,7 @@ class ActionsLabapp
                 continue;
             }
 
-            $classfile = DOL_DOCUMENT_ROOT . '/custom/' . strtolower($modname) . '/core/modules/mod' . $modname . '.class.php';
+            $classfile = DOL_DOCUMENT_ROOT . '/custom/labapp/core/modules/modLabApp.class.php';
             if (!file_exists($classfile)) {
                 dol_syslog('LabApp initModules: arquivo não encontrado — ' . $classfile, LOG_WARNING);
                 continue;
