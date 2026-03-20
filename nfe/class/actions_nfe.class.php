@@ -403,7 +403,7 @@ class ActionsNfe
             $mysoc->crt           = getDolGlobalInt('MAIN_INFO_CRT');
             //$mysoc->cod_municipio = getDolGlobalInt('MAIN_INFO_COD_MUNICIPIO');
             $mysoc->nFant         = getDolGlobalString('MAIN_INFO_NOME_FANTASIA');
-            $mysoc->rua           = getDolGlobalString('MAIN_INFO_RUA');
+            $mysoc->rua           = $mysoc->address;
             $mysoc->bairro        = getDolGlobalString('MAIN_INFO_BAIRRO');
             $mysoc->numero        = getDolGlobalInt('MAIN_INFO_NUMERO');
 

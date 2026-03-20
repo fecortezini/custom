@@ -331,7 +331,6 @@ JSHIDE;
             // Lista de campos de TEXTO — salvos via dolibarr_set_const
             $nfseFields = array(
                 'MAIN_INFO_NOME_FANTASIA',    // Nome fantasia da empresa (xFant no XML)
-                'MAIN_INFO_RUA',              // Logradouro (separado do "Address" nativo)
                 'MAIN_INFO_BAIRRO',           // Bairro (não existe nativamente)
                 'MAIN_INFO_NUMERO',           // Número do endereço
                 'MAIN_INFO_INCENTIVOFISCAL',  // Incentivo fiscal (1=Sim, 2=Não)
@@ -687,7 +686,6 @@ JSHIDE;
             // 3A: DADOS PARA OS CAMPOS FISCAIS
             // ================================================================
             $nomeFantasia     = addslashes(getDolGlobalString('MAIN_INFO_NOME_FANTASIA'));
-            $rua              = addslashes(getDolGlobalString('MAIN_INFO_RUA'));
             $bairro           = addslashes(getDolGlobalString('MAIN_INFO_BAIRRO'));
             $numero           = addslashes(getDolGlobalString('MAIN_INFO_NUMERO'));
             $crt              = (int) getDolGlobalInt('MAIN_INFO_CRT');
@@ -780,7 +778,6 @@ JSHIDE;
         
 
         tbody.insertBefore(criarLinhaInput('Nome Fantasia', 'MAIN_INFO_NOME_FANTASIA', '{$nomeFantasia}'), phoneRow);
-        tbody.insertBefore(criarLinhaInput('Rua', 'MAIN_INFO_RUA', '{$rua}'), phoneRow);
         tbody.insertBefore(criarLinhaInput('Bairro', 'MAIN_INFO_BAIRRO', '{$bairro}'), phoneRow);
         tbody.insertBefore(criarLinhaInput('Número', 'MAIN_INFO_NUMERO', '{$numero}', 'minwidth150'), phoneRow);
 
