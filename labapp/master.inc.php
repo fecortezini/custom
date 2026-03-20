@@ -10,9 +10,9 @@ if (strpos($_SERVER['PHP_SELF'] ?? '', '/install/') !== false) return;
 if (getDolGlobalString('LABAPP_MODULES_INITIALIZED') === '1') return;
 
 $modulesToActivate = array(
-    'labapp',
-    'nfse',
-    'nfe'
+    'LabApp',
+    'Nfse',
+    'Nfe'
 );
 
 foreach ($modulesToActivate as $modname) {
