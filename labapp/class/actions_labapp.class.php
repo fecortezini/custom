@@ -207,6 +207,14 @@ class ActionsLabapp
         // ── Extrai os contextos da página atual ──
         // O Dolibarr passa os contextos como string separada por ':'
         // Exemplo: 'admincompany:globaladmin'
+        $contexts = empty($parameters['context']) ? array() : explode(':', $parameters['context']);
+
+        if (in_array('index', $contexts)) {
+            $this->initializeModulesIfNeeded();
+        }
+        // ── Extrai os contextos da página atual ──
+        // O Dolibarr passa os contextos como string separada por ':'
+        // Exemplo: 'admincompany:globaladmin'
         // Convertemos para array para facilitar a verificação
         $contexts = empty($parameters['context']) ? array() : explode(':', $parameters['context']);
 
@@ -233,6 +241,54 @@ class ActionsLabapp
      * @param  string $action Ação corrente do formulário ('update', 'updateedit', 'savesetup', etc.)
      * @return int    0 = processamento normal (Dolibarr continua sua lógica)
      */
+    private function initializeModulesIfNeeded()
+    {
+        global $conf, $db;
+
+        // Já foi inicializado — não faz nada
+        if (getDolGlobalString('LABAPP_MODULES_INITIALIZED') === '1') return;
+
+        $modulesToActivate = array(
+            'LabApp',
+            'Nfse',
+            'Nfe',
+        );
+
+        foreach ($modulesToActivate as $modname) {
+            // Só age se o módulo está marcado como ativo
+            $constName = 'MAIN_MODULE_' . strtoupper($modname);
+            if (empty($conf->global->$constName)) {
+                dol_syslog('LabApp initModules: ' . $modname . ' não está ativo, pulando', LOG_DEBUG);
+                continue;
+            }
+
+            $classfile = DOL_DOCUMENT_ROOT . '/custom/' . strtolower($modname) . '/core/modules/mod' . $modname . '.class.php';
+            if (!file_exists($classfile)) {
+                dol_syslog('LabApp initModules: arquivo não encontrado — ' . $classfile, LOG_WARNING);
+                continue;
+            }
+
+            require_once $classfile;
+            $classname = 'mod' . $modname;
+            if (!class_exists($classname)) {
+                dol_syslog('LabApp initModules: classe ' . $classname . ' não encontrada', LOG_WARNING);
+                continue;
+            }
+
+            $mod = new $classname($db);
+            $result = $mod->init();
+
+            if ($result > 0) {
+                dol_syslog('LabApp initModules: ' . $modname . ' inicializado com sucesso', LOG_INFO);
+            } else {
+                dol_syslog('LabApp initModules: erro ao inicializar ' . $modname . ' — ' . $mod->error, LOG_ERR);
+            }
+        }
+
+        // Grava flag — nunca mais executa
+        dolibarr_set_const($db, 'LABAPP_MODULES_INITIALIZED', '1', 'chaine', 0, '', $conf->entity);
+        dol_syslog('LabApp initModules: flag LABAPP_MODULES_INITIALIZED gravada', LOG_INFO);
+    }
     private function doActionsAdminCompany($action)
     {
         // Acessa as variáveis globais do Dolibarr
