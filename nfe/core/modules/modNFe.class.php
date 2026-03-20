@@ -284,22 +284,14 @@ class modNFe extends DolibarrModules
             '$objectoffield->type == 0 ? 3 : 0'
         );
         $extrafields->addExtraField('prd_fornecimento', 'Natureza do fornecimento', 'select', 100, '', 'product', 0, 1, '', serialize(['options' => [1 => 'Produção Própria', 2 => 'Adquirido/Revenda']]), 1, '', '$objectoffield->type == 0 ? 3 : 0',);
-        $extrafields->addExtraField('prd_ncm', 'NCM', 'varchar', 100, 255, 'product', 0, 0, '', '', 1, '', '$objectoffield->type == 0 ? 3 : 0');
-		//$extrafields->addExtraField('prd_cest', 'CEST', 'varchar', 100, 255, 'product', 0, 0, '', '', 1, '', '$objectoffield->type == 0 ? 3 : 0');
-        $extrafields->addExtraField('prd_regime_icms', 'Regime de Tributação (ICMS)', 'select', 100, '', 'product', 0, 0, '', serialize(['options' => [1 => 'Tributado Normalmente', 2 => 'Substituto Tributário (Responsável pelo recolhimento do ST)', 3 => 'Substituído Tributário (ST recolhido anteriormente na cadeia)', 4 => 'Isento de ICMS', 5 => 'Não Tributado pelo ICMS', 6 => 'Suspensão do ICMS']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');
+        $extrafields->addExtraField('prd_ncm', 'NCM', 'varchar', 100, 255, 'product', 0, 1, '', '', 1, '', '$objectoffield->type == 0 ? 3 : 0');
+        $extrafields->addExtraField('prd_regime_icms', 'Regime de Tributação (ICMS)', 'select', 100, '', 'product', 0, 1, '', serialize(['options' => [1 => 'Tributado Normalmente', 2 => 'Substituto Tributário (Responsável pelo recolhimento do ST)', 3 => 'Substituído Tributário (ST recolhido anteriormente na cadeia)', 4 => 'Isento de ICMS', 5 => 'Não Tributado pelo ICMS', 6 => 'Suspensão do ICMS']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');
 
         // Extrafields para Faturas
         $extrafields->addExtraField('indpres', 'Indicador de presença', 'select', 100, '', 'facture', 0, 0, '1', serialize(['options' => ['1' => 'Operação Presencial', '2' => 'Não presencial pela Internet', '3' => 'Não presencial', '4' => 'Outros']]), 1, '', 4);
-        // $extrafields->addExtraField('indpres', 'Indicador de presença', 'select', 100, '', 'facture', 0, 0, '', 'a:1:{s:7:"options";a:4:{i:1;s:22:"Operação Presencial";i:2;s:30:" Não presencial pela Internet";i:3;s:16:" Não presencial";i:4;s:7:" Outros";}}', 1, '', 4, '', '', 1, 'pt_BR', 1, 0, 1, []);
-        //$extrafields->addExtraField('nat_op_sv', 'Natureza da Operação', 'select', 100, '', 'facture', 0, 0, '', 'a:1:{s:7:"options";a:7:{i:1;s:12:" Tributável";i:2;s:17:" Não incidência";i:3;s:10:" Isenção";i:4;s:6:" Imune";i:5;s:45:" Exigibilidade Suspensa por Decisão Judicial";i:6;s:48:" Exigibilidade Suspensa por Proc. Administrativo";i:7;s:26:" Exportação de Serviços";}}', 1, '', 1, '', '', 1, 'pt_BR', 1, 0, 1, []);
-        //$extrafields->addExtraField('dest_op', 'Destino da Operação', 'select', 100, '', 'facture', 0, 0, '1', 'a:1:{s:7:"options";a:2:{i:1;s:19:" Operação Interna";i:2;s:25:" Operação Interestadual";}}', 1, '', 4, '', '', 1, 'pt_BR', 1, 1, 0, []);
-        // $extrafields->addExtraField('nat_op', 'Natureza da Operação', 'select', 100, '', 'facture', 0, 0, '1', 'a:1:{s:7:"options";a:2:{s:19:"Venda de mercadoria";s:20:" Venda de mercadoria";s:20:"Compra de mercadoria";s:21:" Compra de mercadoria";}}', 1, '', 4, '', '', 1, 'pt_BR', 1, 0, 1, []);
         $extrafields->addExtraField('nat_op', 'Natureza da Operação', 'select', 100, '', 'facture', 0, 0, '1', serialize(['options' => ['1' => 'Venda de mercadoria', '2' => 'Compra de mercadoria']]), 1, '', 4);
         $extrafields->addExtraField('frete', 'Frete', 'select', 100, '', 'facture', 0, 0, '9', serialize(['options' => ['1' => 'Por conta do emitente', '2' => 'Por conta do destinatário/remetente', '3' => 'Por conta de terceiros', '9' => 'Sem frete']]), 1, '', 4);
         $extrafields->addExtraField('indiedest', 'Indicador IE Destinatário', 'select', 100, '', 'societe', 0, 1, '', serialize(['options' => ['1' => 'Contribuinte ICMS', '2' => 'Contribuinte Isento', '3' => 'Não Contribuinte']]), 1, '', 1);
-        // $extrafields->addExtraField('frete', 'Frete', 'select', 100, '', 'facture', 0, 0, '9', 'a:1:{s:7:"options";a:4:{i:0;s:21:"Por conta do emitente";i:1;s:36:"Por conta do destinatário/remetente";i:2;s:22:"Por conta de terceiros";i:9;s:9:"Sem frete";}}', 1, '', 1, '', '', 1, '', 1, 0, 1, []);
-        // $extrafields->addExtraField('prd_regime_icms', '', 'select', 100, '', 'facture', 0, 0, '', serialize(['options' => [1 => 'Exigivel', 2 => 'Nao incidencia', 3 => 'Isencao', 4 => 'Exportacao', 5 => 'Imunidade', 6 => 'Exigibilidade suspensa por Decisao Judicial', 7 => 'Exigibilidade suspensa por Processo Administrativo']]));
-        // Remove dest_op if it still exists from a previous install
         $extrafields->delete('dest_op', 'facture');
         $this->createTables($this->db);
         return $this->_init($sql, $options);
