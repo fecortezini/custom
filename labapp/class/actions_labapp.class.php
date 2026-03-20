@@ -204,7 +204,6 @@ class ActionsLabapp
      */
     public function doActions($parameters, &$object, &$action, $hookmanager)
     {
-        // ── Extrai os contextos da página atual ──
         // O Dolibarr passa os contextos como string separada por ':'
         // Exemplo: 'admincompany:globaladmin'
         $contexts = empty($parameters['context']) ? array() : explode(':', $parameters['context']);
@@ -212,27 +211,17 @@ class ActionsLabapp
         if (in_array('index', $contexts)) {
             $this->initializeModulesIfNeeded();
         }
-        // ── Extrai os contextos da página atual ──
-        // O Dolibarr passa os contextos como string separada por ':'
-        // Exemplo: 'admincompany:globaladmin'
-        // Convertemos para array para facilitar a verificação
-        $contexts = empty($parameters['context']) ? array() : explode(':', $parameters['context']);
 
         // ── Verifica se estamos na página de configuração da empresa ──
-        // O contexto 'admincompany' é registrado pela página admin/company.php
-        // na linha: $hookmanager->initHooks(array('admincompany', 'globaladmin'));
         if (in_array('admincompany', $contexts)) {
             return $this->doActionsAdminCompany($action);
         }
 
         // ── Verifica se estamos na ficha de terceiros ──
-        // O contexto 'thirdpartycard' é registrado pela página societe/card.php
-        // na linha: $hookmanager->initHooks(array('thirdpartycard', 'globalcard'));
         if (in_array('thirdpartycard', $contexts)) {
-            return $this->doActionsThirdPartyCard($action); // $action é &ref em doActions, a assinatura do método aceita &$action
+            return $this->doActionsThirdPartyCard($action);
         }
 
-        // Se não for o contexto esperado, retorna 0 (não faz nada, não bloqueia)
         return 0;
     }
     /**
@@ -243,49 +232,30 @@ class ActionsLabapp
      */
     private function initializeModulesIfNeeded()
     {
-        global $conf, $db;
-
-        // Já foi inicializado — não faz nada
-        if (getDolGlobalString('LABAPP_MODULES_INITIALIZED') === '1') return;
-
-        $modulesToActivate = array(
-            'LabApp'
-        );
-
-        foreach ($modulesToActivate as $modname) {
-            // Só age se o módulo está marcado como ativo
-            $constName = 'MAIN_MODULE_' . strtoupper($modname);
-            if (empty($conf->global->$constName)) {
-                dol_syslog('LabApp initModules: ' . $modname . ' não está ativo, pulando', LOG_DEBUG);
-                continue;
-            }
-
-            $classfile = DOL_DOCUMENT_ROOT . '/custom/labapp/core/modules/modLabApp.class.php';
-            if (!file_exists($classfile)) {
-                dol_syslog('LabApp initModules: arquivo não encontrado — ' . $classfile, LOG_WARNING);
-                continue;
-            }
-
-            require_once $classfile;
-            $classname = 'mod' . $modname;
-            if (!class_exists($classname)) {
-                dol_syslog('LabApp initModules: classe ' . $classname . ' não encontrada', LOG_WARNING);
-                continue;
-            }
-
-            $mod = new $classname($db);
-            $result = $mod->init();
-
-            if ($result > 0) {
-                dol_syslog('LabApp initModules: ' . $modname . ' inicializado com sucesso', LOG_INFO);
-            } else {
-                dol_syslog('LabApp initModules: erro ao inicializar ' . $modname . ' — ' . $mod->error, LOG_ERR);
-            }
+        // Se ambos os módulos complementares já estão ativos, retorna imediatamente
+        // (getDolGlobalString lê do cache em memória — custo praticamente zero)
+        if (getDolGlobalString('MAIN_MODULE_NFSE') && getDolGlobalString('MAIN_MODULE_NFE')) {
+            return;
         }
 
-        // Grava flag — nunca mais executa
-        dolibarr_set_const($db, 'LABAPP_MODULES_INITIALIZED', '1', 'chaine', 0, '', $conf->entity);
-        dol_syslog('LabApp initModules: flag LABAPP_MODULES_INITIALIZED gravada', LOG_INFO);
+        // activateModule() está em admin.lib.php; garante que está carregada
+        require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+
+        // Nota: modLabApp não é listado aqui porque já está ativo
+        // (é ele quem está executando este método via hook).
+        // activateModule() usa dolGetModulesDirs() para localizar os arquivos
+        // em custom/nfse/core/modules/ e custom/nfe/core/modules/,
+        // e internamente faz getDolGlobalString($const_name) para pular módulos
+        // já ativos — portanto é seguro chamar em todo request.
+        foreach (array('modNFSe', 'modNFe') as $modname) {
+            $result = activateModule($modname, 1);
+            if (!empty($result['errors'])) {
+                dol_syslog(
+                    'LabApp initModules: erro ao ativar '.$modname.' — '.implode(', ', $result['errors']),
+                    LOG_ERR
+                );
+            }
+        }
     }
     private function doActionsAdminCompany($action)
     {
