@@ -78,9 +78,9 @@ class modLabApp extends DolibarrModules
         }
 
         // Define Real (BRL) como moeda padrão (apenas se ainda não configurado)
-        if (!getDolGlobalString('MAIN_MONNAIE')) {
-            dolibarr_set_const($this->db, 'MAIN_MONNAIE', 'BRL', 'chaine', 0, '', $conf->entity);
-        }
+        
+        dolibarr_set_const($this->db, 'MAIN_MONNAIE', 'BRL', 'chaine', 0, '', $conf->entity);
+        
 
         return $this->_init([], $options);
     }
