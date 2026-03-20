@@ -9,17 +9,20 @@ if (strpos($_SERVER['PHP_SELF'] ?? '', '/install/') !== false) return;
 // Se já rodou alguma vez, a constante existe e não faz nada
 if (getDolGlobalString('LABAPP_MODULES_INITIALIZED') === '1') return;
 
+// $modulesToActivate = array(
+//     'LabApp',
+//     'Nfse',
+//     'Nfe'
+// );
 $modulesToActivate = array(
-    'LabApp',
-    'Nfse',
-    'Nfe'
+    'LabApp'
 );
 
 foreach ($modulesToActivate as $modname) {
     $constName = 'MAIN_MODULE_' . strtoupper($modname);
     if (empty($conf->global->$constName)) continue;
 
-    $classfile = DOL_DOCUMENT_ROOT . '/custom/' . $modname . '/core/modules/mod' . ucfirst($modname) . '.class.php';
+    $classfile = DOL_DOCUMENT_ROOT . '/custom/labapp/core/modules/modLabApp.class.php';
     if (!file_exists($classfile)) continue;
 
     require_once $classfile;
