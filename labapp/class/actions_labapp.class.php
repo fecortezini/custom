@@ -726,12 +726,6 @@ JSHIDE;
         window.history.scrollRestoration = 'manual';
     }
     document.addEventListener('DOMContentLoaded', function() {
-        var phoneLabel = document.querySelector('label[for="phone"]');
-        if (!phoneLabel) return;
-        var phoneRow = phoneLabel.closest('tr');
-        if (!phoneRow) return;
-        var tbody = phoneRow.parentNode;
-
         function criarLinhaInput(label, name, value, cssClass) {
             var tr = document.createElement('tr');
             tr.className = 'oddeven';
@@ -777,30 +771,62 @@ JSHIDE;
 
         
 
-        tbody.insertBefore(criarLinhaInput('Nome Fantasia', 'MAIN_INFO_NOME_FANTASIA', '{$nomeFantasia}'), phoneRow);
-        tbody.insertBefore(criarLinhaInput('Bairro', 'MAIN_INFO_BAIRRO', '{$bairro}'), phoneRow);
-        tbody.insertBefore(criarLinhaInput('Número', 'MAIN_INFO_NUMERO', '{$numero}', 'minwidth150'), phoneRow);
+        // Helper: insere newRow imediatamente após refRow
+        function insertAfterRow(newRow, refRow) {
+            var next = refRow.nextElementSibling;
+            if (next) {
+                refRow.parentNode.insertBefore(newRow, next);
+            } else {
+                refRow.parentNode.appendChild(newRow);
+            }
+        }
 
-        tbody.insertBefore(criarLinhaSelect('Regime Tributário', 'MAIN_INFO_CRT', [
-            {value: 1, text: 'Simples Nacional'},
-            {value: 2, text: 'Simples Nacional com excesso'},
-            {value: 3, text: 'Lucro Real'},
-            {value: 4, text: 'Lucro Presumido'}
-        ], {$crt}), phoneRow);
+        // 1. Nome Fantasia → logo abaixo de Razão Social
+        var nameEl = document.querySelector('#name');
+        if (nameEl) {
+            var nameRow = nameEl.closest('tr');
+            if (nameRow) {
+                insertAfterRow(criarLinhaInput('Nome Fantasia', 'MAIN_INFO_NOME_FANTASIA', '{$nomeFantasia}'), nameRow);
+            }
+        }
 
-        tbody.insertBefore(criarLinhaSelect('Regime Especial (NFS-e)', 'MAIN_INFO_REGIMETRIBUTACAO', [
-            {value: 1, text: 'Microempresa Municipal'},
-            {value: 2, text: 'Estimativa'},
-            {value: 3, text: 'Sociedade de Profissionais'},
-            {value: 4, text: 'Cooperativa'},
-            {value: 5, text: 'Microempresário Individual (MEI)'},
-            {value: 6, text: 'Microempresa ou Empresa de Pequeno Porte (ME/EPP)'}
-        ], {$regimeTributacao}), phoneRow);
+        // 2. Bairro + Número → logo abaixo do CEP
+        var cepEl = document.querySelector('#MAIN_INFO_SOCIETE_ZIP');
+        if (cepEl) {
+            var cepRow = cepEl.closest('tr');
+            if (cepRow) {
+                insertAfterRow(criarLinhaInput('Bairro', 'MAIN_INFO_BAIRRO', '{$bairro}'), cepRow);
+                var bairroRow = cepRow.nextElementSibling;
+                insertAfterRow(criarLinhaInput('Número', 'MAIN_INFO_NUMERO', '{$numero}', 'minwidth150'), bairroRow || cepRow);
+            }
+        }
 
-        tbody.insertBefore(criarLinhaSelect('Incentivo Fiscal (NFS-e)', 'MAIN_INFO_INCENTIVOFISCAL', [
-            {value: 1, text: 'Sim'},
-            {value: 2, text: 'Não'}
-        ], {$incentivoFiscal}), phoneRow);
+        // 3. Campos fiscais → antes do campo Telefone
+        var phoneLabel = document.querySelector('label[for="phone"]');
+        if (phoneLabel) {
+            var phoneRow = phoneLabel.closest('tr');
+            if (phoneRow) {
+                var tbody = phoneRow.parentNode;
+                tbody.insertBefore(criarLinhaSelect('Regime Tributário', 'MAIN_INFO_CRT', [
+                    {value: 1, text: 'Simples Nacional'},
+                    {value: 2, text: 'Simples Nacional com excesso'},
+                    {value: 3, text: 'Lucro Real'},
+                    {value: 4, text: 'Lucro Presumido'}
+                ], {$crt}), phoneRow);
+                tbody.insertBefore(criarLinhaSelect('Regime Especial (NFS-e)', 'MAIN_INFO_REGIMETRIBUTACAO', [
+                    {value: 1, text: 'Microempresa Municipal'},
+                    {value: 2, text: 'Estimativa'},
+                    {value: 3, text: 'Sociedade de Profissionais'},
+                    {value: 4, text: 'Cooperativa'},
+                    {value: 5, text: 'Microempresário Individual (MEI)'},
+                    {value: 6, text: 'Microempresa ou Empresa de Pequeno Porte (ME/EPP)'}
+                ], {$regimeTributacao}), phoneRow);
+                tbody.insertBefore(criarLinhaSelect('Incentivo Fiscal (NFS-e)', 'MAIN_INFO_INCENTIVOFISCAL', [
+                    {value: 1, text: 'Sim'},
+                    {value: 2, text: 'Não'}
+                ], {$incentivoFiscal}), phoneRow);
+            }
+        }
 
         // Após um redirect de salvar, o Dolibarr adiciona page_y= na URL
         // e rola a página até a posição salva (via $(document).ready() do lib_foot.js.php).

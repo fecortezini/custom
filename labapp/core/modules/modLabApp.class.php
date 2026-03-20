@@ -60,9 +60,28 @@ class modLabApp extends DolibarrModules
     }
     public function init($options = '')
     {
+        global $conf;
+
         // Executar importação de estados e cidades
         $this->importarEstadosCidades();
         $this->createExtrafields();
+
+        // Define Brasil como país padrão (apenas se ainda não configurado)
+        if (!getDolGlobalString('MAIN_INFO_SOCIETE_COUNTRY')) {
+            $resBR = $this->db->query("SELECT rowid FROM ".MAIN_DB_PREFIX."c_country WHERE code = 'BR' LIMIT 1");
+            if ($resBR) {
+                $objBR = $this->db->fetch_object($resBR);
+                if ($objBR) {
+                    dolibarr_set_const($this->db, 'MAIN_INFO_SOCIETE_COUNTRY', $objBR->rowid, 'chaine', 0, '', $conf->entity);
+                }
+            }
+        }
+
+        // Define Real (BRL) como moeda padrão (apenas se ainda não configurado)
+        if (!getDolGlobalString('MAIN_MONNAIE')) {
+            dolibarr_set_const($this->db, 'MAIN_MONNAIE', 'BRL', 'chaine', 0, '', $conf->entity);
+        }
+
         return $this->_init([], $options);
     }
 
