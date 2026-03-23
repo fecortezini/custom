@@ -171,7 +171,7 @@ class ActionsNfe
 
         // ── Ficha de produto/serviço: valida extrafields de NF-e apenas para produtos ──
         if (in_array('productcard', $contexts)) {
-            return $this->doActionsProductCard($action);
+            return $this->doActionsProductCard($action, $object);
         }
 
         // NOVO: Sanear extrafields da fatura e das linhas o mais cedo possível
@@ -1095,14 +1095,25 @@ BLOQUEIO;
      * visibilidade ($list) apenas na renderização, mas aplica a flag `required`
      * durante a validação sem checar se o campo estava visível para o tipo atual.
      */
-    private function doActionsProductCard(&$action)
+    private function doActionsProductCard(&$action, $object = null)
     {
         if (!in_array($action, array('add', 'update')) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
             return 0;
         }
 
         // type=0 → produto, type=1 → serviço
-        $type = (int) GETPOST('type', 'int');
+        // GETPOST('type', 'int') retorna 0 quando o campo não está no POST (comportamento padrão),
+        // o que causaria falsa validação de produto em serviços durante update.
+        // Usa $object->type como fallback quando type não está explicitamente no POST.
+        if (GETPOSTISSET('type')) {
+            $type = (int) GETPOST('type', 'int');
+        } elseif (is_object($object) && isset($object->type)) {
+            $type = (int) $object->type;
+        } else {
+            // Sem informação de tipo: não valida para evitar falso positivo
+            return 0;
+        }
+
         if ($type !== 0) {
             // Serviço: não valida campos exclusivos de produto
             return 0;
