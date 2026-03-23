@@ -864,6 +864,54 @@ class ActionsNfe
     public function formObjectOptions($parameters, &$object, &$action, $hookmanager)
     {
         $contexts = empty($parameters['context']) ? array() : explode(':', $parameters['context']);
+
+        // ── Ficha de produto/serviço: injeta hidden inputs para campos do tipo oposto ──
+        // Quando o Dolibarr salva um produto/serviço, ele exclui do INSERT os extrafields
+        // com list=0 (condição $objectoffield->type==X). Se as colunas MySQL forem NOT NULL
+        // sem DEFAULT, o banco rejeita o INSERT inteiro, perdendo também os campos visíveis.
+        // Solução: no submit do formulário, adicionar via JS hidden inputs com value=''
+        // para os campos ausentes — o Dolibarr os encontra no POST e os inclui no INSERT.
+        if (in_array('productcard', $contexts)) {
+            $prodFields = json_encode(['options_prd_ncm', 'options_prd_origem', 'options_prd_fornecimento', 'options_prd_regime_icms']);
+            $srvFields  = json_encode(['options_srv_cod_itemlistaservico', 'options_iss_retido']);
+            print <<<JS
+<script>
+(function () {
+    'use strict';
+    document.addEventListener('DOMContentLoaded', function () {
+        var prodFields = {$prodFields};
+        var srvFields  = {$srvFields};
+
+        // O Dolibarr usa o form nomeado 'prod' na ficha de produto/serviço
+        var form = document.querySelector('form[name="prod"]') || document.querySelector('form');
+        if (!form) return;
+
+        form.addEventListener('submit', function () {
+            // Campo que determina o tipo: radio button ou select com name="type"
+            var typeEl = form.querySelector('[name="type"]:checked') || form.querySelector('[name="type"]');
+            var type   = typeEl ? parseInt(typeEl.value, 10) : -1;
+
+            // Para serviço (type=1): campos de produto estão ocultos → adiciona hidden para prd_*
+            // Para produto (type=0): campos de serviço estão ocultos → adiciona hidden para srv_*
+            var missing = (type === 1) ? prodFields : srvFields;
+
+            missing.forEach(function (name) {
+                if (!form.querySelector('[name="' + name + '"]')) {
+                    var hidden   = document.createElement('input');
+                    hidden.type  = 'hidden';
+                    hidden.name  = name;
+                    hidden.value = '';
+                    form.appendChild(hidden);
+                }
+            });
+        });
+    });
+}());
+</script>
+JS;
+            return 0;
+        }
+
         if (empty($object->id) || !in_array('invoicecard', $contexts)) return 0;
 
         // Sanitiza extrafields ANTES de qualquer output de campos pela página
