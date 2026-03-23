@@ -266,7 +266,7 @@ class modNFe extends DolibarrModules
             '',
             'product',
             0,
-            0,
+            1,
             '',
             serialize(['options' => [
                 '0' => '0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8',
