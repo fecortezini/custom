@@ -1110,45 +1110,55 @@ BLOQUEIO;
         } elseif (is_object($object) && isset($object->type)) {
             $type = (int) $object->type;
         } else {
-            // Sem informação de tipo: não valida para evitar falso positivo
+            // Sem informação de tipo: não faz nada para evitar falso positivo
             return 0;
         }
 
-        if ($type !== 0) {
-            // Serviço: não valida campos exclusivos de produto
-            return 0;
-        }
+        if ($type === 1) {
+            // ── SERVIÇO ──────────────────────────────────────────────────────────
+            // Campos de produto ficam ocultos e fora do POST.
+            // Injeta string vazia para que o Dolibarr grave '' no banco
+            // (sem isso o MySQL strict mode rejeita o INSERT por falta de valor).
+            $produtoFields = array('options_prd_ncm', 'options_prd_origem', 'options_prd_fornecimento', 'options_prd_regime_icms');
+            foreach ($produtoFields as $f) {
+                if (!GETPOSTISSET($f)) {
+                    $_POST[$f] = '';
+                }
+            }
+        } else {
+            // ── PRODUTO (type=0) ─────────────────────────────────────────────────
+            // Campos de serviço ficam ocultos e fora do POST: injeta vazio.
+            $servicoFields = array('options_srv_cod_itemlistaservico', 'options_iss_retido');
+            foreach ($servicoFields as $f) {
+                if (!GETPOSTISSET($f)) {
+                    $_POST[$f] = '';
+                }
+            }
 
-        // Produto: valida os extrafields obrigatórios de NF-e
-        $errors = array();
+            // Valida os extrafields obrigatórios de NF-e para produtos.
+            $errors = array();
 
-        $ncm = trim((string) GETPOST('options_prd_ncm', 'alphanohtml'));
-        if ($ncm === '') {
-            $errors[] = 'NCM';
-        }
+            if (trim((string) GETPOST('options_prd_ncm', 'alphanohtml')) === '') {
+                $errors[] = 'NCM';
+            }
+            if (trim((string) GETPOST('options_prd_origem', 'alphanohtml')) === '') {
+                $errors[] = 'Origem da Mercadoria';
+            }
+            if (trim((string) GETPOST('options_prd_fornecimento', 'alphanohtml')) === '') {
+                $errors[] = 'Natureza do fornecimento';
+            }
+            if (trim((string) GETPOST('options_prd_regime_icms', 'alphanohtml')) === '') {
+                $errors[] = 'Regime de Tributação (ICMS)';
+            }
 
-        $origem = trim((string) GETPOST('options_prd_origem', 'alphanohtml'));
-        if ($origem === '') {
-            $errors[] = 'Origem da Mercadoria';
-        }
-
-        $fornecimento = trim((string) GETPOST('options_prd_fornecimento', 'alphanohtml'));
-        if ($fornecimento === '') {
-            $errors[] = 'Natureza do fornecimento';
-        }
-
-        $regimeIcms = trim((string) GETPOST('options_prd_regime_icms', 'alphanohtml'));
-        if ($regimeIcms === '') {
-            $errors[] = 'Regime de Tributação (ICMS)';
-        }
-
-        if (!empty($errors)) {
-            setEventMessages(
-                'Campos obrigatórios de NF-e não preenchidos: ' . implode(', ', $errors),
-                null,
-                'errors'
-            );
-            $action = ($action === 'add') ? 'create' : 'edit';
+            if (!empty($errors)) {
+                setEventMessages(
+                    'Campos obrigatórios de NF-e não preenchidos: ' . implode(', ', $errors),
+                    null,
+                    'errors'
+                );
+                $action = ($action === 'add') ? 'create' : 'edit';
+            }
         }
 
         return 0;

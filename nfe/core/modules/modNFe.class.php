@@ -285,6 +285,9 @@ class modNFe extends DolibarrModules
             '',
             '$objectoffield->type == 0 ? 3 : 0'
         );
+        // default_value='' garante que o Dolibarr use string vazia como fallback
+        // em insertExtraFields()/updateExtraFields() quando o campo está oculto
+        // (campos de produto não aparecem no POST ao criar um serviço).
         $extrafields->addExtraField('prd_fornecimento', 'Natureza do fornecimento', 'select', 100, '', 'product', 0, 0, '', serialize(['options' => [1 => 'Produção Própria', 2 => 'Adquirido/Revenda']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');
         $extrafields->addExtraField('prd_ncm', 'NCM', 'varchar', 100, 255, 'product', 0, 0, '', '', 1, '', '$objectoffield->type == 0 ? 3 : 0');
         $extrafields->addExtraField('prd_regime_icms', 'Regime de Tributação (ICMS)', 'select', 100, '', 'product', 0, 0, '', serialize(['options' => [1 => 'Tributado Normalmente', 2 => 'Substituto Tributário (Responsável pelo recolhimento do ST)', 3 => 'Substituído Tributário (ST recolhido anteriormente na cadeia)', 4 => 'Isento de ICMS', 5 => 'Não Tributado pelo ICMS', 6 => 'Suspensão do ICMS']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');

@@ -165,6 +165,9 @@ class modNFSe extends DolibarrModules
             }
         }
         
+        // default_value='' garante que o Dolibarr use string vazia como fallback
+        // em insertExtraFields()/updateExtraFields() quando o campo está oculto
+        // (campos de serviço não aparecem no POST ao criar um produto).
         $extrafields->addExtraField(
             'srv_cod_itemlistaservico', 
             'Código do Serviço', 
@@ -172,9 +175,9 @@ class modNFSe extends DolibarrModules
             100, 
             '', 
             'product',
-            0,
-            0,
-            '',
+            0,   // unique
+            0,   // required=0: visibilidade condicional já controla quando exibir
+            '',  // default_value: fallback nativo quando o campo não está no POST
             serialize(['options' => $servicosOptions]),
             0,
             '',
@@ -187,9 +190,9 @@ class modNFSe extends DolibarrModules
             100, 
             '', 
             'product',
-            0,
-            0,
-            '',
+            0,   // unique
+            0,   // required=0
+            '',  // default_value
             serialize(['options' => [1 => 'Sim', 2 => 'Não']]),
             1,
             '',
