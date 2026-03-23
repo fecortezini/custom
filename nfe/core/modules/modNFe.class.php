@@ -34,7 +34,9 @@ class modNFe extends DolibarrModules
             'hooks' => array(
                 // Faturas (que já funcionam)
                 'invoicecard',
-                'facturecard'
+                'facturecard',
+                // Ficha de produto/serviço (validação condicional por tipo)
+                'productcard',
             )
         );
         $this->config_page_url = array('setup_module.php@nfe');
@@ -266,7 +268,7 @@ class modNFe extends DolibarrModules
             '',
             'product',
             0,
-            1,
+            0,
             '',
             serialize(['options' => [
                 '0' => '0 - Nacional, exceto as indicadas nos códigos 3, 4, 5 e 8',
@@ -283,9 +285,9 @@ class modNFe extends DolibarrModules
             '',
             '$objectoffield->type == 0 ? 3 : 0'
         );
-        $extrafields->addExtraField('prd_fornecimento', 'Natureza do fornecimento', 'select', 100, '', 'product', 0, 1, '', serialize(['options' => [1 => 'Produção Própria', 2 => 'Adquirido/Revenda']]), 1, '', '$objectoffield->type == 0 ? 3 : 0',);
-        $extrafields->addExtraField('prd_ncm', 'NCM', 'varchar', 100, 255, 'product', 0, 1, '', '', 1, '', '$objectoffield->type == 0 ? 3 : 0');
-        $extrafields->addExtraField('prd_regime_icms', 'Regime de Tributação (ICMS)', 'select', 100, '', 'product', 0, 1, '', serialize(['options' => [1 => 'Tributado Normalmente', 2 => 'Substituto Tributário (Responsável pelo recolhimento do ST)', 3 => 'Substituído Tributário (ST recolhido anteriormente na cadeia)', 4 => 'Isento de ICMS', 5 => 'Não Tributado pelo ICMS', 6 => 'Suspensão do ICMS']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');
+        $extrafields->addExtraField('prd_fornecimento', 'Natureza do fornecimento', 'select', 100, '', 'product', 0, 0, '', serialize(['options' => [1 => 'Produção Própria', 2 => 'Adquirido/Revenda']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');
+        $extrafields->addExtraField('prd_ncm', 'NCM', 'varchar', 100, 255, 'product', 0, 0, '', '', 1, '', '$objectoffield->type == 0 ? 3 : 0');
+        $extrafields->addExtraField('prd_regime_icms', 'Regime de Tributação (ICMS)', 'select', 100, '', 'product', 0, 0, '', serialize(['options' => [1 => 'Tributado Normalmente', 2 => 'Substituto Tributário (Responsável pelo recolhimento do ST)', 3 => 'Substituído Tributário (ST recolhido anteriormente na cadeia)', 4 => 'Isento de ICMS', 5 => 'Não Tributado pelo ICMS', 6 => 'Suspensão do ICMS']]), 1, '', '$objectoffield->type == 0 ? 3 : 0');
 
         // Extrafields para Faturas
         $extrafields->addExtraField('indpres', 'Indicador de presença', 'select', 100, '', 'facture', 0, 0, '1', serialize(['options' => ['1' => 'Operação Presencial', '2' => 'Não presencial pela Internet', '3' => 'Não presencial', '4' => 'Outros']]), 1, '', 4);

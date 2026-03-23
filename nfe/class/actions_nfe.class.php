@@ -169,6 +169,11 @@ class ActionsNfe
             return $this->doActionsThirdPartyCard($action);
         }
 
+        // ── Ficha de produto/serviço: valida extrafields de NF-e apenas para produtos ──
+        if (in_array('productcard', $contexts)) {
+            return $this->doActionsProductCard($action);
+        }
+
         // NOVO: Sanear extrafields da fatura e das linhas o mais cedo possível
         if (in_array('invoicecard', $contexts)) {
             // Saneia extrafields do cabeçalho da fatura e aplica defaults
@@ -1074,6 +1079,65 @@ BLOQUEIO;
                 500  // largura
             );
             return 1; // indica que fornecemos a confirmação
+        }
+
+        return 0;
+    }
+
+    /**
+     * Handler para a ficha de produto/serviço (product/card.php) — módulo NFe
+     *
+     * Valida server-side os extrafields obrigatórios de NF-e (NCM, Origem,
+     * Natureza do Fornecimento, Regime ICMS) somente quando o tipo for
+     * produto (type=0). Para serviços (type=1) esses campos são ignorados.
+     *
+     * Isso contorna um comportamento do Dolibarr que avalia a condição de
+     * visibilidade ($list) apenas na renderização, mas aplica a flag `required`
+     * durante a validação sem checar se o campo estava visível para o tipo atual.
+     */
+    private function doActionsProductCard(&$action)
+    {
+        if (!in_array($action, array('add', 'update')) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            return 0;
+        }
+
+        // type=0 → produto, type=1 → serviço
+        $type = (int) GETPOST('type', 'int');
+        if ($type !== 0) {
+            // Serviço: não valida campos exclusivos de produto
+            return 0;
+        }
+
+        // Produto: valida os extrafields obrigatórios de NF-e
+        $errors = array();
+
+        $ncm = trim((string) GETPOST('options_prd_ncm', 'alphanohtml'));
+        if ($ncm === '') {
+            $errors[] = 'NCM';
+        }
+
+        $origem = trim((string) GETPOST('options_prd_origem', 'alphanohtml'));
+        if ($origem === '') {
+            $errors[] = 'Origem da Mercadoria';
+        }
+
+        $fornecimento = trim((string) GETPOST('options_prd_fornecimento', 'alphanohtml'));
+        if ($fornecimento === '') {
+            $errors[] = 'Natureza do fornecimento';
+        }
+
+        $regimeIcms = trim((string) GETPOST('options_prd_regime_icms', 'alphanohtml'));
+        if ($regimeIcms === '') {
+            $errors[] = 'Regime de Tributação (ICMS)';
+        }
+
+        if (!empty($errors)) {
+            setEventMessages(
+                'Campos obrigatórios de NF-e não preenchidos: ' . implode(', ', $errors),
+                null,
+                'errors'
+            );
+            $action = ($action === 'add') ? 'create' : 'edit';
         }
 
         return 0;
